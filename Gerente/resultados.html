@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Resultados de Búsqueda</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <img src="logo_blanco_horizontal.png" alt="Smartshop Logo" height="40">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#menu" aria-controls="menu" aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="menu">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="productos.html">Productos</a></li>
+                <li class="nav-item"><a class="nav-link" href="nuevo_producto.html">Añadir producto</a></li>
+                <li class="nav-item"><a class="nav-link" href="registrar_etiqueta.html">Añadir Etiquetas</a></li>
+                <li class="nav-item"><a class="nav-link" href="modificar_etiqueta.html">Modificar Etiquetas</a></li>
+            </ul>
+
+            <!-- Formulario de búsqueda en la navbar -->
+            <form class="d-flex" action="resultados.html" method="GET">
+                <input class="form-control me-2" type="search" placeholder="Buscar producto" aria-label="Buscar" name="query">
+                <button class="btn btn-outline-success" type="submit">Buscar</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2>Resultados de la búsqueda</h2>
+
+    <!-- Mostrar productos basados en la búsqueda -->
+    <div id="productResults"></div>
+</div>
+
+
+<script>
+    // Obtener la consulta de búsqueda desde la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const query = urlParams.get('query');
+
+    // Función de búsqueda
+    function buscarProducto() {
+        const query = document.getElementById("buscador").value.toLowerCase();
+        const filteredProducts = products.filter(product => product.nombre_modelo.toLowerCase().includes(query));
+        console.log("Filtered Products:", filteredProducts);
+        displayProducts(filteredProducts);  // Mostrar los productos filtrados
+    }
+
+    // Función para mostrar productos
+    async function displayProducts(query) {
+        try {
+            // Aquí haces una solicitud GET a tu API para buscar los productos
+            const response = await axios.get(`https://smartshopdb.xerone.es/find/modelo?nombre_modelo=${query}`);
+            const products = response.data.data;
+
+            const resultsContainer = document.getElementById('productResults');
+            resultsContainer.innerHTML = '';
+
+            // Si no hay productos, mostrar un mensaje
+            if (products.length === 0) {
+                resultsContainer.innerHTML = `<p>No se encontraron productos para "${query}".</p>`;
+            } else {
+                // Mostrar los productos
+                products.forEach(product => {
+                    const productDiv = document.createElement('div');
+                    productDiv.classList.add('row', 'mb-3');
+                    productDiv.innerHTML = `
+                            <div class="col-md-3">
+                                <img src="${product.image}" class="img-fluid" alt="${product.name}">
+                            </div>
+                            <div class="col-md-9">
+                                <h4>${product.name}</h4>
+                                <p>${product.price}</p>
+                                <a href="producto_detalles.html?id=${product.id}" class="btn btn-info">Ver Detalles</a>
+                            </div>
+                        `;
+                    resultsContainer.appendChild(productDiv);
+                });
+            }
+        } catch (error) {
+            console.error('Error al obtener los productos:', error);
+        }
+    }
+
+    // Llamar a la función de mostrar productos con la consulta de búsqueda
+    if (query) {
+        displayProducts(query);
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

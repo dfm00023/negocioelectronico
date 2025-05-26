@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Añadir Producto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <img src="logo_blanco_horizontal.png" alt="Smartshop Logo" height="40">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#menu" aria-controls="menu" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="menu">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="productos.html">Modelos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="registrar_etiqueta.html">Añadir Producto</a></li>
+                    <li class="nav-item"><a class="nav-link" href="modificar_etiqueta.html">Modificar Productos</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h2 class="mb-4 text-center">Añadir Nuevo Producto</h2>
+        <form id="formProducto">
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input type="text" id="nombre" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="importe" class="form-label">Precio</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="importe" name="importe" aria-label="Cantidad en Euros" required>
+                    <span class="input-group-text">€</span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="pasillo" class="form-label">Pasillo</label>
+                <input type="text" id="pasillo" class="form-control" >
+            </div>
+            <div class="mb-3">
+                <label for="estante" class="form-label">Estante</label>
+                <input type="text" id="estante" class="form-control" >
+            </div>
+            <div class="mb-3">
+                <label for="imagen" class="form-label">URL de la Imagen</label>
+                <input type="url" id="imagen" class="form-control" oninput="mostrarVistaPrevia()">
+            </div>
+            <div class="text-center mb-4">
+                <img id="previewImagen" src="" alt="Vista previa de la imagen" class="img-fluid rounded shadow" style="max-height: 200px; display: none;">
+            </div>
+            <button type="submit" class="btn btn-success w-100">Guardar Producto</button>
+            <div id="mensaje" class="mt-3 text-center"></div>
+        </form>
+    </div>
+    <script>
+        document.getElementById("formProducto").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const id_modelo = Math.floor(Math.random() * 1e10);
+            console.log(id_modelo);
+
+            const nombre_modelo = document.getElementById("nombre").value;
+            const precio = document.getElementById("importe").value;
+            const pasillo = document.getElementById("pasillo").value;
+            const estante = document.getElementById("estante").value;
+            const url_imagen = document.getElementById("imagen").value;
+
+            // Construcción de la URL con parámetros
+            let url = `https://smartshopdb.xerone.es/add/modelo?id_modelo=${id_modelo}&nombre_modelo=${nombre_modelo}&precio=${precio}`;
+
+            if (pasillo){
+                url += `&pasillo=${pasillo}`;
+            }
+            if (estante){
+                url += `&estante=${estante}`;
+            }
+            if (url_imagen){
+                url += `&url_imagen=${url_imagen}`;
+            }
+
+            try {
+                const response = await fetch(url, {method: "GET"});
+                const data = await response.json();
+                console.log(response);
+                console.log(data);
+
+                if (response.ok) {
+                    if (data["success"] === false) {
+                        document.getElementById("mensaje").innerHTML = `<div class="alert alert-danger">Ha ocurrido un error inesperado</div>`;
+                        return;
+                    }
+                    document.getElementById("mensaje").innerHTML = `<div class="alert alert-success">Modelo añadido correctamente.</div>`;
+                    document.getElementById("formProducto").reset();
+                    // Esto borra el src de la vista previa
+                    borrarVistaPrevia();
+                } else {
+                    document.getElementById("mensaje").innerHTML = `<div class="alert alert-danger">Error: ${data.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById("mensaje").innerHTML = `<div class="alert alert-danger">Error en la conexión con el servidor.</div>`;
+            }
+        });
+        // Función para mostrar la vista previa de la imagen
+        function mostrarVistaPrevia() {
+            const url = document.getElementById("imagen").value;
+            const preview = document.getElementById("previewImagen");
+
+            if (url) {
+                preview.src = url;
+                preview.style.display = "block";
+            } else {
+                preview.style.display = "none";
+            }
+        }
+        function borrarVistaPrevia() {
+            const preview = document.getElementById("previewImagen");
+            preview.src = "";
+            preview.style.display = "none";
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mi Página con Bootstrap</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Estilos minimalistas con fondo -->
+    <style>
+        .card-minimal {
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            height: 100%;
+            transition: transform 0.2s ease;
+        }
+
+        .card-minimal:hover {
+            transform: translateY(-3px);
+        }
+
+        .bg-soft-blue {
+            background-color: #e8f0fe;
+        }
+
+        .bg-soft-green {
+            background-color: #e6f4ea;
+        }
+
+        .bg-soft-yellow {
+            background-color: #fff9db;
+        }
+
+        .bg-soft-red {
+            background-color: #fdecea;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 1.5rem;
+            color: #222;
+            font-weight: 500;
+            margin-bottom: 0;
+        }
+
+        .card-small-text {
+            font-size: 0.95rem;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <img src="logo_blanco_horizontal.png" alt="Smartshop Logo" height="40">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#menu" aria-controls="menu" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="menu">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="productos.html">Modelos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="registrar_etiqueta.html">Añadir Producto</a></li>
+                    <li class="nav-item"><a class="nav-link" href="modificar_etiqueta.html">Modificar Productos</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Panel del Gerente</h2>
+        <div class="row g-4">
+            <!-- Ventas del mes -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card-minimal bg-soft-blue">
+                    <div class="card-body p-0">
+                        <h5 class="card-title">Ventas del mes</h5>
+                        <p class="card-value" id="ventasMes">--</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ingresos del mes -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card-minimal bg-soft-green">
+                    <div class="card-body p-0">
+                        <h5 class="card-title">Ingresos</h5>
+                        <p class="card-value" id="ingresosMes">--</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Producto más vendido -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card-minimal bg-soft-yellow">
+                    <div class="card-body p-0">
+                        <h5 class="card-title">Más vendido</h5>
+                        <p class="card-small-text" id="productoPopular">--</p>
+                        <!-- Imagen del producto -->
+                        <img id="imagen_mas_vendido" src="" alt="Producto más vendido" class="img-fluid mb-3 rounded" style="height: 150px; object-fit: cover; display: none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos sin stock -->
+            <div class="col-md-6 col-xl-3">
+                <div class="card-minimal bg-soft-red">
+                    <div class="card-body p-0">
+                        <h5 class="card-title">Sin stock</h5>
+                        <ul class="list-unstyled card-small-text mb-0" id="sinStock">
+                            <li>--</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Crear listas de productos y modelos
+        let productos = [];
+        let modelos =[];
+
+        async function fetchProducts() {
+            try {
+                const response = await fetch("https://smartshopdb.xerone.es/productos");
+                const data = await response.json();
+                productos = data.data;
+                console.log(productos.length);
+                //console.log(productos);
+            } catch (error) {
+                console.error("Error al obtener productos:", error);
+            }
+        }
+
+        async function fetchModels() {
+            try {
+                const response = await fetch("https://smartshopdb.xerone.es/modelos");
+                const data = await response.json();
+                modelos = data.data;
+                console.log(modelos.length);
+            } catch (error) {
+                console.error("Error al obtener modelos:", error);
+            }
+        }
+        // Funciones auxiliares
+        function estaEnMesActual(fecha) {
+            const hoy = new Date();
+            const fechaComparar = new Date(fecha);
+
+            return (
+                fechaComparar.getMonth() === hoy.getMonth() &&
+                fechaComparar.getFullYear() === hoy.getFullYear()
+            );
+        }
+
+        // Función para obtener las ventas del mes
+        function getVentasMes() {
+            let contador = 0;
+            for (let i = 0; i < productos.length; i++) {
+                if (estaEnMesActual(productos[i].fecha_venta)) {
+                    contador ++;
+                }
+            }
+            return contador;
+        }
+        // Función para obtener los ingresos del mes
+        function getIngresosMes() {
+            //console.log(productos);
+            let ingresos = 0;
+            for (let i = 0; i < productos.length; i++) {
+                if (estaEnMesActual(productos[i].fecha_venta)) {
+                    id_modelo = productos[i].id_modelo;
+                    const modelo = modelos.find(m => m.id_modelo === id_modelo);
+                    //console.log(modelo);
+                    ingresos += modelo.precio;
+                }
+            }
+            return ingresos;
+        }
+
+        // Función para obtener el producto más vendido
+        function getProductoMasVendido() {
+            let productosVendidos = [];
+            for (let i = 0; i < productos.length; i++) {
+                if (estaEnMesActual(productos[i].fecha_venta)) {
+                    const modelo = modelos.find(m => m.id_modelo === productos[i].id_modelo);
+                    if (modelo) {
+                        let index = productosVendidos.findIndex(m => m.nombre === modelo.nombre_modelo);
+                        //console.log(index);
+                        if (index === -1) {
+                            productosVendidos.push({
+                                nombre: modelo.nombre_modelo,
+                                img: modelo.url_imagen,
+                                cantidad: 1
+                            });
+                        } else {
+                            productosVendidos[index].cantidad++;
+                        }
+                    }
+                }
+            }
+            // Ordenar por cantidad
+            productosVendidos.sort((a, b) => b.cantidad - a.cantidad);
+            return productosVendidos[0];
+        }
+        // Función para obtener los productos sin stock
+        function getModelosSinStock() {
+            let sinStock = [];
+            for (let i = 0; i < modelos.length; i++) {
+                if (modelos[i].stock === 0) {
+                    sinStock.push(modelos[i].nombre_modelo)
+                }
+            }
+            return sinStock;
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Obtener los modelos de la API
+            await fetchProducts();
+            await fetchModels();
+
+            // Calculamos los datos
+            let ventas = getVentasMes();
+            let ingresos = getIngresosMes();
+            let productoMasVendido = getProductoMasVendido();
+            let modelosSinStock = getModelosSinStock();
+
+            // Simulamos datos — cámbialos por fetch a tu API
+            document.getElementById("ventasMes").textContent = ventas;
+            document.getElementById("ingresosMes").textContent = ingresos + " €";
+            if(productoMasVendido === undefined) {
+                document.getElementById("productoPopular").textContent = "---";
+            }else{
+                document.getElementById("productoPopular").textContent = productoMasVendido.nombre;
+                const imgElemento = document.getElementById("imagen_mas_vendido");
+                imgElemento.src = productoMasVendido.img;
+                imgElemento.style.display = "block";
+            }
+
+            const sinStockList = document.getElementById("sinStock");
+            sinStockList.innerHTML = "";
+            modelosSinStock.forEach(p => {
+                const li = document.createElement("li");
+                console.log(p);
+                li.textContent = p;
+                sinStockList.appendChild(li);
+            });
+        });
+
+    </script>
+
+
+    <script src="index.js"></script>
+    <script src="login.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
