@@ -265,6 +265,10 @@ def add_usuario_route():
         contrasena = args["contrasena"]
         telefono = args.get("telefono", "NULL")  # Optional, default to NULL
 
+        success, usuarios = db.find_usuario(email_usuario=email)
+        if success and usuarios:
+            return jsonify({"success": False, "error": "Ya existe un usuario con ese email."}), 400
+
         success, usuario = db.add_usuario(email, nombre, apellidos, direccion, contrasena, telefono)
         return jsonify({"success": success, "data": usuario}), 200
     except Exception as e:
@@ -279,9 +283,9 @@ def remove_usuario_route():
         return jsonify({"success": False, "error": "Indica el email del usuario."}), 400
 
     try:
-        email_usuario = args["email_usuario"]
+        email_usuario = args["email"]
 
-        success = db.remove_producto(email_usuario)
+        success = db.remove_usuario(email_usuario)
         return jsonify({"success": success}), 200
     except Exception as e:
         print(f"Hubo un problema al borrar el producto. Motivo: {e}")

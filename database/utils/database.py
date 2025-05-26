@@ -718,6 +718,7 @@ class DataBase:
                 cursor = conn.cursor()
                 query = "DELETE FROM usuario WHERE email_usuario = ?"
                 values = (email_usuario,)  # Importante: La coma crea una tupla de un solo elemento
+                print(values)
                 cursor.execute(query, values)
                 conn.commit()
                 return True
