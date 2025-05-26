@@ -18,6 +18,36 @@ def get_all_estados_route():
         print(f"Hubo un problema al obtener los estados. Motivo: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route("/estados_pedidos", methods=["GET"])
+def get_all_estados_pedidos_route():
+    try:
+        success, estados = db.get_all_estados_pedidos()
+
+        return jsonify({"success": success, "data": estados}), 200
+    except Exception as e:
+        print(f"Hubo un problema al obtener los estados. Motivo: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/pedidos", methods=["GET"])
+def get_all_pedidos_route():
+    try:
+        success, estados = db.get_all_pedidos()
+
+        return jsonify({"success": success, "data": estados}), 200
+    except Exception as e:
+        print(f"Hubo un problema al obtener los estados. Motivo: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/usuarios", methods=["GET"])
+def get_all_usuarios_route():
+    try:
+        success, estados = db.get_all_usuarios()
+
+        return jsonify({"success": success, "data": estados}), 200
+    except Exception as e:
+        print(f"Hubo un problema al obtener los estados. Motivo: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route("/modelos", methods=["GET"])
 def get_all_modelos_route():
     try:
@@ -219,3 +249,94 @@ def obtener_imagen():
         return send_file('../cdn/localhost-file-not-found.png', mimetype='image/jpeg')  # Ajusta el tipo MIME según la imagen
     except FileNotFoundError:
         return "Imagen not encontrada", 404
+
+@app.route("/add/usuario", methods=["GET"])
+def add_usuario_route():
+    args = request.args
+
+    if not args:
+        return jsonify({"success": False, "error": "Indica los datos del producto."}), 400
+
+    try:
+        email = args["email"]
+        nombre = args["nombre"]
+        apellidos = args["apellidos"]
+        direccion = args["direccion"]
+        contrasena = args["contrasena"]
+        telefono = args.get("telefono", "NULL")  # Optional, default to NULL
+
+        success, usuario = db.add_usuario(email, nombre, apellidos, direccion, contrasena, telefono)
+        return jsonify({"success": success, "data": usuario}), 200
+    except Exception as e:
+        print(f"Hubo un problema al insertar el producto. Motivo: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/remove/usuario", methods=["GET"])
+def remove_usuario_route():
+    args = request.args
+
+    if not args:
+        return jsonify({"success": False, "error": "Indica el email del usuario."}), 400
+
+    try:
+        email_usuario = args["email_usuario"]
+
+        success = db.remove_producto(email_usuario)
+        return jsonify({"success": success}), 200
+    except Exception as e:
+        print(f"Hubo un problema al borrar el producto. Motivo: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/edit/usuario", methods=["GET"])
+def edit_usuario_route():
+    args = request.args
+
+    if not args:
+        return jsonify({"success": False, "error": "Indica los datos del usuario."}), 400
+
+    try:
+        email_usuario = args["email"]
+        print("Hola, estoy editando un usuario")
+        nombre_usuario = args.get("nombre", None)
+        apellidos = args.get("apellidos", None)
+        contrasena = args.get("contrasena", None)
+        telefono = args.get("telefono", None)
+        direccion = args.get("direccion", None)
+
+        success, usuario = db.edit_usuario(
+            email_usuario,
+            nombre_usuario,
+            apellidos,
+            contrasena,
+            telefono,
+            direccion
+        )
+        return jsonify({"success": success, "data": usuario}), 200
+    except Exception as e:
+        print(f"Hubo un problema al editar el modelo. Motivo: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/find/usuario", methods=["GET"])
+def find_usuario_route():
+    args = request.args
+
+    try:
+        email = args.get("email", None)
+        contrasena = args.get("contrasena", None)
+
+        if not email or not contrasena:
+            return jsonify({"success": False, "error": "Debes proporcionar email y contraseña."}), 400
+
+        success, usuarios = db.find_usuario(email_usuario=email)
+        if success and usuarios:
+            usuario = usuarios[0]
+            if usuario.get("contrasena") == contrasena:
+                return jsonify({"success": True, "data": usuario}), 200
+            else:
+                return jsonify({"success": False, "error": "Contraseña incorrecta."}), 401
+        else:
+            return jsonify({"success": False, "error": "Usuario no encontrado."}), 404
+
+    except Exception as e:
+        print(f"Hubo un problema al obtener el producto. Motivo: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
