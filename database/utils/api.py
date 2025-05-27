@@ -77,7 +77,7 @@ def add_modelo_route():
         id_modelo = args["id_modelo"]
         nombre_modelo = args["nombre_modelo"]
         precio = float(args["precio"])
-        descipcion = args.get("descripcion", None)  # Optional, default to None
+        descripcion = args.get("descripcion", None)  # Optional, default to None
         categoria = args.get("categoria", None)  # Optional, default to None
         url_imagen = args.get("url_imagen", None) # Optional, default to None
         estante = args.get("estante", None)  # Optional, default to None
@@ -86,7 +86,7 @@ def add_modelo_route():
         success, modelo = db.add_modelo(id_modelo,
                                         nombre_modelo,
                                         precio,
-                                        descipcion,
+                                        descripcion,
                                         categoria,
                                         url_imagen if url_imagen else "NULL",
                                         int(estante) if estante else "NULL",
@@ -124,13 +124,18 @@ def edit_modelo_route():
         id_modelo = args["id_modelo"]
         nombre_modelo = args.get("nombre_modelo", None)
         precio = args.get("precio", None)
+        descripcion = args.get("descripcion", None)  # Optional, default to None
+        categoria = args.get("categoria", None)  # Optional, default to None
         url_imagen = args.get("url_imagen", None) # Optional, default to None
         estante = args.get("estante", None)  # Optional, default to None
         pasillo = args.get("pasillo", None)  # Optional, default to None
+        print(f"Recibidos los datos del modelo: {id_modelo}, {nombre_modelo}, {precio}, {descripcion}, {categoria}, {url_imagen}, {estante}, {pasillo}")
 
         success, modelo = db.edit_modelo(id_modelo,
                                         nombre_modelo,
                                         float(precio) if precio else None,
+                                        descripcion if descripcion else None,
+                                        categoria if categoria else None,
                                         url_imagen if url_imagen else None,
                                         int(estante) if estante else None,
                                         int(pasillo) if pasillo else None)
