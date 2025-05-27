@@ -317,10 +317,10 @@ def edit_usuario_route():
         )
         return jsonify({"success": success, "data": usuario}), 200
     except Exception as e:
-        print(f"Hubo un problema al editar el modelo. Motivo: {e}")
+        print(f"Hubo un problema al editar el usuario. Motivo: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route("/find/usuario", methods=["GET"])
+@app.route("/login/usuario", methods=["GET"])
 def find_usuario_route():
     args = request.args
 
@@ -343,4 +343,81 @@ def find_usuario_route():
 
     except Exception as e:
         print(f"Hubo un problema al obtener el producto. Motivo: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/add/pedido", methods=["GET"])
+def add_pedido_route():
+    args = request.args
+
+    if not args:
+        return jsonify({"success": False, "error": "Indica los datos del pedido."}), 400
+
+    try:
+        id_pedido = args["id_pedido"]
+        email_usuario = args["email_usuario"]
+        fecha_pedido = args.get("fecha_pedido", None)
+        estado_pedido = args.get("estado_pedido", None)
+
+        success, pedido = db.add_pedido(id_pedido, email_usuario, fecha_pedido, estado_pedido)
+        return jsonify({"success": success, "data": pedido}), 200
+    except Exception as e:
+        print(f"Hubo un problema al insertar el producto. Motivo: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/remove/pedido", methods=["GET"])
+def remove_pedido_route():
+    args = request.args
+
+    if not args:
+        return jsonify({"success": False, "error": "Indica el ID del pedido."}), 400
+
+    try:
+        id_pedido = args["id_pedido"]
+
+        success = db.remove_pedido(id_pedido)
+        return jsonify({"success": success}), 200
+    except Exception as e:
+        print(f"Hubo un problema al borrar el producto. Motivo: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/edit/pedido", methods=["GET"])
+def edit_pedido_route():
+    args = request.args
+
+    if not args:
+        return jsonify({"success": False, "error": "Indica los datos del pedido."}), 400
+
+    try:
+        id_pedido = args["id_pedido"]
+        email_usuario = args.get("email_usuario", None)
+        estado = args.get("estado", None)
+        fecha = args.get("fecha", None)
+        fecha_entrega = args.get("fecha_entrega", None)
+        mensaje = args.get("mensaje", None)
+
+        success, pedido = db.edit_pedido(
+            id_pedido,
+            email_usuario,
+            estado,
+            fecha,
+            fecha_entrega,
+            mensaje
+        )
+        return jsonify({"success": success, "data": pedido}), 200
+    except Exception as e:
+        print(f"Hubo un problema al editar el pedido. Motivo: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/find/pedido", methods=["GET"])
+def find_pedido_route():
+    args = request.args
+
+    try:
+        id_pedido = args.get("id_pedido", None)
+        email_usuario = args.get("email_usuario", None)
+
+        success, pedido = db.find_producto(id_pedido, email_usuario)
+        return jsonify({"success": success, "data": pedido}), 200
+    except Exception as e:
+        print(f"Hubo un problema al obtener el pedido. Motivo: {e}")
         return jsonify({"success": False, "error": str(e)}), 500

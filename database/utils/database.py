@@ -98,6 +98,11 @@ class DataBase:
                     pass
 
                 try:
+                    cursor.execute("INSERT INTO estado_pedido (id_estado_pedido, estado_pedido) VALUES ('c', 'carrito')")
+                except sqlite3.IntegrityError:
+                    pass
+
+                try:
                     cursor.execute("INSERT INTO estado_pedido (id_estado_pedido, estado_pedido) VALUES ('p', 'preparando')")
                 except sqlite3.IntegrityError:
                     pass
@@ -108,7 +113,7 @@ class DataBase:
                     pass
 
                 try:
-                    cursor.execute("INSERT INTO estado_pedido (id_estado_pedido, estado_pedido) VALUES ('c', 'completado')")
+                    cursor.execute("INSERT INTO estado_pedido (id_estado_pedido, estado_pedido) VALUES ('t', 'terminado')")
                 except sqlite3.IntegrityError:
                     pass
 
@@ -119,7 +124,8 @@ class DataBase:
                         email_usuario VARCHAR(254) REFERENCES usuario(email_usuario),
                         estado VARCHAR(10) REFERENCES estado_pedido(id_estado_pedido),
                         fecha DATE NOT NULL,
-                        fecha_entrega DATE
+                        fecha_entrega DATE,
+                        mensaje TEXT
                     );
                     """)
                 except sqlite3.OperationalError:
@@ -744,6 +750,172 @@ class DataBase:
                     cursor.execute(query, (email_usuario,))
                 else:
                     query = "SELECT * FROM usuario"
+                    cursor.execute(query)
+                rows = cursor.fetchall()
+                row_list = [dict(row) for row in rows]
+                return True, row_list
+        except sqlite3.Error as e:
+            print(f"Hubo un problema con la base de datos. Motivo: {e}")
+            return False, None
+
+    def add_pedido(self, id_pedido: str, email_usuario: str, estado: str, fecha: str, fecha_entrega: Optional[str] = "NULL", mensaje: Optional[str] = "NULL") \
+            -> tuple[bool, Optional[list[dict]]]:
+        """
+        Agrega un nuevo pedido a la base de datos.
+
+        Args:
+            id_pedido (str): El ID único del pedido. Debe ser una cadena.
+            email_usuario (str): El email del usuario que realiza el pedido. Debe coincidir con el valor de 'email_usuario' en la tabla 'usuario'.
+            estado (str): El estado del pedido. Debe coincidir con el valor de 'id_estado_pedido' en la tabla 'estado_pedido'.
+            fecha (str): La fecha del pedido.
+            fecha_entrega (Optional[str]): La fecha de entrega del pedido. Opcional, puede ser None.
+            mensaje (Optional[str]): Un mensaje opcional asociado al pedido. Opcional, puede ser None.
+
+        Returns:
+            tuple[bool, Optional[list[dict]]]: Una tupla que indica si la operación fue exitosa (True/False) y, en caso de éxito, una lista con los detalles del pedido insertado. Si falla, devuelve None.
+        """
+        try:
+            with self.__get_db_connection() as conn:
+                cursor = conn.cursor()
+                query = "INSERT INTO pedido (id_pedido, email_usuario, estado, fecha, fecha_entrega, mensaje) VALUES (?, ?, ?, ?, ?)"
+                values = (id_pedido, email_usuario, estado, fecha, fecha_entrega, mensaje)
+                cursor.execute(query, values)
+                conn.commit()
+                cursor.execute("SELECT * FROM pedido ORDER BY rowid DESC LIMIT 1")
+                rows = cursor.fetchall()
+                row_list = [dict(row) for row in rows]
+                return True, row_list
+        except sqlite3.Error as e:
+            print(f"Hubo un problema con la base de datos. Motivo: {e}")
+            return False, None
+
+    def edit_pedido(self, id_pedido: str, email_usuario: Optional[str] = None, estado: Optional[str] = None,
+                    fecha: Optional[str] = None, fecha_entrega: Optional[str] = None,
+                    mensaje: Optional[str] = None) -> tuple[bool, Optional[list[dict]]]:
+        """
+        Edita un pedido de la base de datos.
+
+        Args:
+            id_pedido (str): El ID único del pedido. Debe ser una cadena.
+            email_usuario (Optional[str]): El email del usuario que realiza el pedido. Opcional, puede ser None.
+            estado (Optional[str]): El estado del pedido. Opcional, puede ser None.
+            fecha (Optional[str]): La fecha del pedido. Opcional, puede ser None.
+            fecha_entrega (Optional[str]): La fecha de entrega del pedido. Opcional, puede ser None.
+            mensaje (Optional[str]): Un mensaje opcional asociado al pedido. Opcional, puede ser None.
+
+        Returns:
+            tuple[bool, Optional[list[dict]]]: Una tupla que indica si la operación fue exitosa (True/False) y, en caso de éxito, una lista con los detalles del pedido editado. Si falla, devuelve None.
+        """
+        try:
+            with self.__get_db_connection() as conn:
+                cursor = conn.cursor()
+
+                pairs = zip(
+                    ['email_usuario', 'estado', 'fecha', 'fecha_entrega', 'mensaje'],
+                    [email_usuario, estado, fecha, fecha_entrega, mensaje]
+                )
+
+                filtered_pairs = [pair for pair in pairs if pair[1] is not None]
+
+                if len(filtered_pairs) == 0:
+                    print("Se ha intentado editar un pedido sin proporcionar datos")
+                    return False, None
+
+                columns = [f"{pair[0]} = ?" for pair in filtered_pairs]
+                values = tuple([pair[1] for pair in filtered_pairs])
+                values = values + (id_pedido,)
+
+                query = f"UPDATE pedido SET {', '.join(columns)} WHERE id_pedido = ?"
+                cursor.execute(query, values)
+                conn.commit()
+                cursor.execute("SELECT * FROM pedido WHERE id_pedido = ?", (id_pedido,))
+                rows = cursor.fetchall()
+                row_list = [dict(row) for row in rows]
+                return True, row_list
+        except sqlite3.Error as e:
+            print(f"Hubo un problema con la base de datos. Motivo: {e}")
+            return False, None
+
+    def remove_pedido(self, id_pedido: str) -> bool:
+        """
+        Elimina un pedido de la base de datos.
+
+        Args:
+            id_pedido (str): El ID único del pedido a eliminar. Debe ser una cadena.
+
+        Returns:
+            bool: Un valor indicando si la operación fue exitosa (True/False).
+        """
+        try:
+            with self.__get_db_connection() as conn:
+                cursor = conn.cursor()
+                # Primero comrpobamos el estado del pedido para eliminar los productos asociados.
+                cursor.execute("SELECT estado FROM pedido WHERE id_pedido = ?", (id_pedido,))
+                rows = cursor.fetchall()
+                estado = rows[0]['estado'] if rows else None
+                if len(rows) == 0:
+                    print(f"No se encontró el pedido con ID {id_pedido}.")
+                    return False
+                elif estado == 'c':
+                    print(f"El pedido con ID {id_pedido} esta en carrito.")
+                    cursor = conn.cursor()
+                    query = "DELETE FROM pro_pedido WHERE id_pedido = ?"
+                    values = (id_pedido,)  # Importante: La coma crea una tupla de un solo elemento
+                    cursor.execute(query, values)
+                    conn.commit()
+                    cursor = conn.cursor()
+                    query = "UPDATE producto SET id_etiqueta = 'd' WHERE id_etiqueta = (SELECT id_producto FROM pro_pedidos WHERE id_pedido = ?)"
+                    values = (id_pedido,)  # Importante: La coma crea una tupla de un solo elemento
+                    cursor.execute(query, values)
+                    conn.commit()
+                elif estado == 't':
+                    print(f"El pedido con ID {id_pedido} esta terminado.")
+                    cursor = conn.cursor()
+                    query = "DELETE FROM pro_pedido WHERE id_pedido = ?"
+                    values = (id_pedido,)  # Importante: La coma crea una tupla de un solo elemento
+                    cursor.execute(query, values)
+                    conn.commit()
+                    cursor = conn.cursor()
+                    query = "DELETE FROM producto WHERE id_etiqueta = (SELECT id_producto FROM pro_pedidos WHERE id_pedido = ?)"
+                    values = (id_pedido,)  # Importante: La coma crea una tupla de un solo elemento
+                    cursor.execute(query, values)
+                    conn.commit()
+                else:
+                    print(f"El pedido con ID {id_pedido} esta en estado {estado}. No se eliminarán los productos asociados.")
+                    return False
+                # Finalmente eliminamos el pedido.
+                cursor = conn.cursor()
+                query = "DELETE FROM pedido WHERE id_pedido = ?"
+                values = (id_pedido,)  # Importante: La coma crea una tupla de un solo elemento
+                cursor.execute(query, values)
+                conn.commit()
+                return True
+        except sqlite3.Error as e:
+            print(f"Hubo un problema con la base de datos. Motivo: {e}")
+            return False
+
+    def find_pedido(self, id_pedido: Optional[str] = None, email_usuario: Optional[str] = None) -> tuple[bool, Optional[list[dict]]]:
+        """
+        Busca un pedido en la base de datos.
+
+        Args:
+            id_pedido (Optional[str]): El ID único del pedido. Opcional, puede ser None.
+            email_usuario (Optional[str]): El email del usuario a buscar. Opcional, puede ser None.
+
+        Returns:
+            tuple[bool, Optional[list[dict]]]: Una tupla que indica si la operación fue exitosa (True/False) y, en caso de éxito, una lista con los detalles del usuario encontrado. Si falla, devuelve None.
+        """
+        try:
+            with self.__get_db_connection() as conn:
+                cursor = conn.cursor()
+                if id_pedido is not None:
+                    query = "SELECT * FROM pedido WHERE id_pedido = ?"
+                    cursor.execute(query, (id_pedido,))
+                elif email_usuario is not None:
+                    query = "SELECT * FROM pedido WHERE email_usuario = ?"
+                    cursor.execute(query, (email_usuario,))
+                else:
+                    query = "SELECT * FROM pedido"
                     cursor.execute(query)
                 rows = cursor.fetchall()
                 row_list = [dict(row) for row in rows]
