@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gestión de Pedidos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        .floating-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            border-radius: 50px;
+        }
+
+        .card-custom {
+            border: 2px solid black;
+            border-radius: 12px;
+            background-color: #f8f9fa; /* gris claro */
+            transition: transform 0.2s ease;
+            padding: 16px;
+            height: 100%;
+        }
+
+        .card-custom:hover {
+            transform: translateY(-3px);
+        }
+
+        .pedido-titulo {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .pedido-detalle {
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <img src="logo_blanco_horizontal.png" alt="Smartshop Logo" height="40">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#menu" aria-controls="menu" aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="menu">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="productos.html">Modelos</a></li>
+                <li class="nav-item"><a class="nav-link" href="registrar_etiqueta.html">Añadir Producto</a></li>
+                <li class="nav-item"><a class="nav-link" href="modificar_etiqueta.html">Modificar Productos</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="mt-4 mb-4">
+        <h1 class="text-left">Gestión de Pedidos</h1>
+    </div>
+    <div class="row g-4" id="contenedor-pedidos">
+        <!-- Aquí se insertarán dinámicamente los pedidos -->
+    </div>
+</div>
+
+<!-- Botón flotante para ver pedidos archivados -->
+<button class="btn btn-secondary floating-button d-flex align-items-center">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-archive me-2" viewBox="0 0 16 16">
+        <path d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2H0z"/>
+        <path d="M0 4h16v9a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm5.5 3a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5z"/>
+    </svg>
+    Ver pedidos archivados
+</button>
+
+<script>
+    const pedidos = [
+        {
+            id: 1,
+            cliente: "Juan Pérez",
+            fecha: "2025-05-25",
+            productos: ["Camiseta", "Pantalón"],
+            total: "45.99€",
+        },
+        {
+            id: 2,
+            cliente: "Laura García",
+            fecha: "2025-05-24",
+            productos: ["Zapatillas"],
+            total: "59.95€",
+        },
+        {
+            id: 3,
+            cliente: "Carlos López",
+            fecha: "2025-05-23",
+            productos: ["Chaqueta", "Bufanda"],
+            total: "89.50€",
+        },
+    ];
+
+    const contenedor = document.getElementById("contenedor-pedidos");
+
+    pedidos.forEach(pedido => {
+        const col = document.createElement("div");
+        col.className = "col-md-6 col-lg-4";
+
+        const card = document.createElement("div");
+        card.className = "card-custom";
+
+        card.innerHTML = `
+        <div class="pedido-titulo">Pedido #${pedido.id}</div>
+        <div class="pedido-detalle">Cliente: ${pedido.cliente}</div>
+        <div class="pedido-detalle">Fecha: ${pedido.fecha}</div>
+        <div class="pedido-detalle">Productos: ${pedido.productos.join(", ")}</div>
+        <div class="pedido-detalle fw-bold">Total: ${pedido.total}</div>
+      `;
+
+        col.appendChild(card);
+        contenedor.appendChild(col);
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

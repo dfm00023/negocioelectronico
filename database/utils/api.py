@@ -77,6 +77,8 @@ def add_modelo_route():
         id_modelo = args["id_modelo"]
         nombre_modelo = args["nombre_modelo"]
         precio = float(args["precio"])
+        descipcion = args.get("descripcion", None)  # Optional, default to None
+        categoria = args.get("categoria", None)  # Optional, default to None
         url_imagen = args.get("url_imagen", None) # Optional, default to None
         estante = args.get("estante", None)  # Optional, default to None
         pasillo = args.get("pasillo", None)  # Optional, default to None
@@ -84,6 +86,8 @@ def add_modelo_route():
         success, modelo = db.add_modelo(id_modelo,
                                         nombre_modelo,
                                         precio,
+                                        descipcion,
+                                        categoria,
                                         url_imagen if url_imagen else "NULL",
                                         int(estante) if estante else "NULL",
                                         int(pasillo) if pasillo else "NULL")

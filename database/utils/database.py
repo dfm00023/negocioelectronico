@@ -51,6 +51,8 @@ class DataBase:
                             id_modelo VARCHAR(5) PRIMARY KEY,
                             nombre_modelo TEXT NOT NULL,
                             precio NUMBER(6,2) NOT NULL,
+                            descripcion TEXT,
+                            categoria VARCHAR(20),
                             url_imagen TEXT,
                             estante INTEGER,
                             pasillo INTEGER
@@ -237,6 +239,8 @@ class DataBase:
                         m.id_modelo,
                         m.nombre_modelo,
                         m.precio,
+                        m.descripcion,
+                        m.categoria,
                         m.url_imagen,
                         m.estante,
                         m.pasillo,
@@ -249,6 +253,8 @@ class DataBase:
                         m.id_modelo,
                         m.nombre_modelo,
                         m.precio,
+                        m.descripcion,
+                        m.categoria,
                         m.url_imagen,
                         m.estante,
                         m.pasillo
@@ -280,7 +286,7 @@ class DataBase:
             print(f"Hubo un problema con la base de datos. Motivo: {e}")
             return False, None
 
-    def add_modelo(self, id_modelo: str, nombre_modelo: str, precio: float, url_imagen: Optional[str] = "NULL", estante: Optional[int] = "NULL",
+    def add_modelo(self, id_modelo: str, nombre_modelo: str, precio: float, descripcion: Optional[str] = "NULL", categoria: Optional[str] = "NULL", url_imagen: Optional[str] = "NULL", estante: Optional[int] = "NULL",
                    pasillo: Optional[int] = "NULL") -> tuple[bool, Optional[list[dict]]]:
         """
         Agrega un nuevo modelo a la base de datos.
@@ -289,6 +295,8 @@ class DataBase:
             id_modelo (str): El ID único del modelo. Debe ser una cadena.
             nombre_modelo (str): El nombre del modelo. Debe ser una cadena.
             precio (float): El precio del modelo. Debe ser un número flotante.
+            descripcion (Optional[str]): Una descripción del modelo. Opcional, puede ser None.
+            categoria (Optional[str]): La categoría del modelo. Opcional, puede ser None.
             url_imagen (Optional[str]): Enlace a la imagen. Opcional, puede ser None.
             estante (Optional[int]): El número de estante donde se ubica el modelo. Opcional, puede ser None.
             pasillo (Optional[int]): El número de pasillo donde se ubica el modelo. Opcional, puede ser None.
@@ -299,8 +307,8 @@ class DataBase:
         try:
             with self.__get_db_connection() as conn:
                 cursor = conn.cursor()
-                query = "INSERT INTO modelo (id_modelo, nombre_modelo, precio, url_imagen, estante, pasillo) VALUES (?, ?, ?, ?, ?, ?)"
-                values = (id_modelo, nombre_modelo, precio, url_imagen, estante, pasillo)
+                query = "INSERT INTO modelo (id_modelo, nombre_modelo, precio, descripcion, categoria, url_imagen, estante, pasillo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                values = (id_modelo, nombre_modelo, precio, descripcion, categoria, url_imagen, estante, pasillo)
                 cursor.execute(query, values)
                 conn.commit()
                 # Una vez confirmados los cambios se obtiene el elemento insertado para devolverlo en la confirmación.
@@ -312,7 +320,7 @@ class DataBase:
             print(f"Hubo un problema con la base de datos. Motivo: {e}")
             return False, None
 
-    def edit_modelo(self, id_modelo: str, nombre_modelo: str = None, precio: Optional[float] = None, url_imagen: Optional[str] = None, estante: Optional[int] = None,
+    def edit_modelo(self, id_modelo: str, nombre_modelo: str = None, precio: Optional[float] = None, descripcion: Optional[str] = None, categoria: Optional[str] = None, url_imagen: Optional[str] = None, estante: Optional[int] = None,
                    pasillo: Optional[int] = None) -> tuple[bool, Optional[list[dict]]]:
         """
         Edita un modelo de la base de datos.
@@ -321,6 +329,8 @@ class DataBase:
             id_modelo (str): El ID único del modelo. Debe ser una cadena.
             nombre_modelo (str): El nombre del modelo. Debe ser una cadena.
             precio (Optional[float]): El precio del modelo. Opcional, puede ser None.
+            descripcion (Optional[str]): La descripción del modelo. Opcional, puede ser None.
+            categoria (Optional[str]): La categoría del modelo. Opcional, puede ser None.
             url_imagen (Optional[str]): Enlace a la imagen. Opcional, puede ser None.
             estante (Optional[int]): El número de estante donde se ubica el modelo. Opcional, puede ser None.
             pasillo (Optional[int]): El número de pasillo donde se ubica el modelo. Opcional, puede ser None.
@@ -334,8 +344,8 @@ class DataBase:
 
                 # Se guardan el nombre de la columna y su valor en pares.
                 pairs = zip(
-                    ['nombre_modelo', 'precio', 'url_imagen', 'estante', 'pasillo'], # Nombre columna
-                    [nombre_modelo, precio, url_imagen, estante, pasillo] # Valor
+                    ['nombre_modelo', 'precio', 'descripcion', 'categoria', 'url_imagen', 'estante', 'pasillo'], # Nombre columna
+                    [nombre_modelo, precio,descripcion, categoria, url_imagen, estante, pasillo] # Valor
                 )
 
                 # Se filtran por los que sí tienen un valor que modificar.
