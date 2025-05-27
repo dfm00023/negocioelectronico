@@ -51,6 +51,8 @@
                     <th></th>
                     <th>Nombre</th>
                     <th>Precio</th>
+                    <th>Descripción</th>
+                    <th>Categoría</th>
                     <th>Pasillo</th>
                     <th>Estante</th>
                     <th>Stock</th>
@@ -83,6 +85,16 @@
                     <div class="mb-3">
                         <label for="modalPrecio" class="form-label">Precio (€)</label>
                         <input type="number" id="modalPrecio" class="form-control" step="0.01">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modalDescripcion" class="form-label">Descripción</label>
+                        <input type="text" id="modalDescripcion" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modalCategoria" class="form-label">Categoría</label>
+                        <input type="text" id="modalCategoria" class="form-control">
                     </div>
 
                     <div class="mb-3">
@@ -137,6 +149,14 @@
                             </div>
                         </div>
                         <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <input type="text" id="descripcion" class="form-control" >
+                        </div>
+                        <div class="mb-3">
+                            <label for="categoria" class="form-label">Categoría</label>
+                            <input type="text" id="categoria" class="form-control" >
+                        </div>
+                        <div class="mb-3">
                             <label for="pasillo" class="form-label">Pasillo</label>
                             <input type="text" id="pasillo" class="form-control" >
                         </div>
@@ -166,7 +186,7 @@
 
         async function fetchProducts() {
             try {
-                const response = await fetch("https://smartshopdb.xerone.es/modelos");
+                const response = await fetch("http://127.0.0.1:9876/modelos");
                 const data = await response.json();
                 products = data.data;
                 console.log(products.length);
@@ -189,9 +209,11 @@
                 fila.setAttribute("id", `producto-${producto.id_modelo}`);
 
                 fila.innerHTML = `
-                    <td><img src="${producto.url_imagen || 'https://smartshopdb.xerone.es/img404'}" alt="Imagen" width="50" height="50"></td>
+                    <td><img src="${producto.url_imagen || 'http://127.0.0.1:9876/img404'}" alt="Imagen" width="50" height="50"></td>
                     <td>${producto.nombre_modelo}</td>
                     <td>${producto.precio} €</td>
+                    <td>${producto.descripcion || ''}</td>
+                    <td>${producto.categoria || ''}</td>
                     <td>${producto.pasillo}</td>
                     <td>${producto.estante}</td>
                     <td>${producto.stock}</td>
@@ -221,7 +243,7 @@
         function eliminarProducto(productoId) {
             if (confirm("¿Estás seguro de que deseas eliminar este modelo?")) {
                 console.log(productoId);
-                let url= `https://smartshopdb.xerone.es/remove/modelo?id_modelo=${productoId}`;
+                let url= `http://127.0.0.1:9876/remove/modelo?id_modelo=${productoId}`;
                 fetch(url, { method: "GET" })
                     .then(response => {
                         if (!response.ok) throw new Error("Error en la respuesta del servidor");
@@ -251,6 +273,8 @@
             document.getElementById("modalProductoId").value = producto.id_modelo;
             document.getElementById("modalNombre").value = producto.nombre_modelo;
             document.getElementById("modalPrecio").value = producto.precio;
+            document.getElementById("modalDescripcion").value = producto.descripcion || '';
+            document.getElementById("modalCategoria").value = producto.categoria || '';
             document.getElementById("modalPasillo").value = producto.pasillo;
             document.getElementById("modalEstante").value = producto.estante;
             document.getElementById("modalStock").value = producto.stock;
@@ -265,14 +289,16 @@
             const id = document.getElementById("modalProductoId").value;
             const nombre = document.getElementById("modalNombre").value;
             const precio = document.getElementById("modalPrecio").value;
+            const descripcion = document.getElementById("modalDescripcion").value;
+            const categoria = document.getElementById("modalCategoria").value;
             const pasillo = document.getElementById("modalPasillo").value;
             const estante = document.getElementById("modalEstante").value;
             const imagen = document.getElementById("modalImagen").value;
 
-            const productoEditado = { id, nombre, precio, pasillo, estante, imagen };
+            const productoEditado = { id, nombre, precio, descripcion, categoria, pasillo, estante, imagen };
 
             try {
-                let url= `https://smartshopdb.xerone.es/edit/modelo?id_modelo=${id}&nombre_modelo=${nombre}&precio=${precio}&pasillo=${pasillo}&estante=${estante}&url_imagen=${imagen}`;
+                let url= `http://127.0.0.1:9876/edit/modelo?id_modelo=${id}&nombre_modelo=${nombre}&precio=${precio}&descripcion=${descripcion}&categoria=${categoria}&pasillo=${pasillo}&estante=${estante}&url_imagen=${imagen}`;
                 fetch(url, { method: "GET" })
                     .then(response => {
                         if (!response.ok) throw new Error("Error en la respuesta del servidor");
@@ -305,13 +331,20 @@
 
             const nombre_modelo = document.getElementById("nombre").value;
             const precio = document.getElementById("importe").value;
+            const descripcion = document.getElementById("descripcion").value;
+            const categoria = document.getElementById("categoria").value;
             const pasillo = document.getElementById("pasillo").value;
             const estante = document.getElementById("estante").value;
             const url_imagen = document.getElementById("imagen").value;
 
             // Construcción de la URL con parámetros
-            let url = `https://smartshopdb.xerone.es/add/modelo?id_modelo=${id_modelo}&nombre_modelo=${nombre_modelo}&precio=${precio}`;
-
+            let url = `http://127.0.0.1:9876/add/modelo?id_modelo=${id_modelo}&nombre_modelo=${nombre_modelo}&precio=${precio}`;
+            if (descripcion){
+                url += `&descripcion=${descripcion}`;
+            }
+            if (categoria){
+                url += `&categoria=${categoria}`;
+            }
             if (pasillo){
                 url += `&pasillo=${pasillo}`;
             }
