@@ -433,6 +433,11 @@ function renderCart() {
 
 
 // Checkout
+function setDefaultShippingAddress(address) {
+    const input = document.getElementById('shipping-address');
+    input.value = address; // valor por defecto
+}
+
 function showCheckout() {
     if (!currentUser) {
         showLogin();
@@ -443,7 +448,7 @@ function showCheckout() {
         showNotification('Tu carrito está vacío', 'error');
         return;
     }
-    
+    setDefaultShippingAddress(currentUser.direccion)
     showSection('checkout');
     renderCheckoutSummary();
 }
@@ -454,56 +459,89 @@ function renderCheckoutSummary() {
     
     checkoutItems.innerHTML = cart.map(item => `
         <div class="order-item">
-            <span>${item.name} x ${item.quantity}</span>
-            <span>$${(item.price * item.quantity).toFixed(2)}</span>
+            <span>${item.nombre_modelo} x ${item.quantity}</span>
+            <span>${(item.precio * item.quantity).toFixed(2)}€</span>
         </div>
     `).join('');
     
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const total = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
     checkoutTotal.innerHTML = `
-        <div class="order-total">Total: $${total.toFixed(2)}</div>
+        <div class="order-total">Total: ${total.toFixed(2)}€</div>
     `;
 }
 
-function handleCheckout(e) {
+async function handleCheckout(e) {
     e.preventDefault();
-    
-    const orderNumber = 'ORD-' + Date.now();
+
+    const orderNumber = 'ORD-' + Date.now() + Math.floor(Math.random() * 1000);
+    console.log(currentUser);
     const order = {
         id: orderNumber,
-        userId: currentUser.id,
+        userId: currentUser.email_usuario,
         items: [...cart],
-        total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
         date: new Date().toISOString(),
-        status: 'Confirmado',
-        shipping: {
-            address: document.getElementById('shipping-address').value,
-            city: document.getElementById('shipping-city').value,
-            postal: document.getElementById('shipping-postal').value,
-            phone: document.getElementById('shipping-phone').value
-        },
+        address: document.getElementById('shipping-address').value,
+        message: document.getElementById('shipping-message').value,
         paymentMethod: document.getElementById('payment-method').value
     };
-    
-    orders.push(order);
-    saveOrdersData();
-    
-    // Limpiar carrito
-    cart = [];
-    saveCartData();
-    updateCartUI();
-    
-    // Mostrar confirmación
-    document.getElementById('order-number').textContent = orderNumber;
-    showModal('success-modal');
-    
-    showNotification('¡Pedido realizado exitosamente!', 'success');
+
+    correcto = await realizarPedido(order);
+    console.log(correcto);
+    if (correcto) {
+        // Limpiar carrito
+        cart = [];
+        saveCartData();
+        updateCartUI();
+
+        // Mostrar confirmación
+        document.getElementById('order-number').textContent = orderNumber;
+        showModal('success-modal');
+
+        showNotification('¡Pedido realizado exitosamente!', 'success');
+    } else {
+        showNotification('Error al realizar el pedido. Intente realizar el pedido de nuevo o contacte con nuestro servicio técnico.', 'error');
+    }
+}
+
+async function realizarPedido(order) {
+
+    let url = server + '/add/pedido?id_pedido=' + order.id + '&email_usuario=' + order.userId + '&direccion=' + order.address + '&fecha_pedido=' + order.date +'&mensaje=' + order.message;
+    console.log(url);
+    try{
+        const response = await fetch(url, {method: "GET"});
+        const data = await response.json();
+        console.log(response);
+        console.log(data);
+        if (data.success === false) {
+            showNotification(data.error, 'error');
+            return false;
+        }
+
+        // Agregar los items del pedido
+        for(let item of order.items) {
+            for (let i = 0; i < item.quantity; i++) {
+                let itemUrl = server + '/add/item?id_pedido=' + order.id + '&id_modelo=' + item.id_modelo;
+                const itemResponse = await fetch(itemUrl, {method: "GET"});
+                const itemData = await itemResponse.json();
+                console.log(itemData);
+                if (itemData.success === false) {
+                    showNotification(itemData.error, 'error');
+                    return false;
+                }
+            }
+        }
+
+        return true;
+
+    }catch (error) {
+        console.log(error);
+    }
 }
 
 // Gestión de pedidos
-function renderOrders() {
+async function renderOrders() {
     const ordersList = document.getElementById('orders-list');
-    const userOrders = orders.filter(order => order.userId === currentUser?.id);
+    const userOrders = await obtenerPedidosUsuario();
     
     if (userOrders.length === 0) {
         ordersList.innerHTML = `
@@ -539,6 +577,33 @@ function renderOrders() {
             <div class="order-total">Total: $${order.total.toFixed(2)}</div>
         </div>
     `).join('');
+}
+
+async function obtenerPedidosUsuario() {
+    if (!currentUser) return [];
+    const url = `${server}/find/pedido?email_usuario=${currentUser.email_usuario}`;
+    try {
+        const response = await fetch(url, { method: "GET" });
+
+        if (!response.ok) {
+            throw new Error("Error en la respuesta del servidor");
+        }
+
+        const data = await response.json();
+        console.log("Pedido encontrado:", data);
+
+        if (data.success === false) {
+            showNotification(data.error || 'Pedido no encontrado', 'error');
+            return null;
+        }
+
+        return data;
+    } catch (error) {
+        console.error("Error al buscar el pedido:", error);
+        showNotification("No se pudo recuperar el pedido. Inténtalo de nuevo más tarde.", 'error');
+        return null;
+    }
+
 }
 
 // Navegación
