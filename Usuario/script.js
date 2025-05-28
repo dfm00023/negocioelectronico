@@ -1,97 +1,101 @@
 // Datos de productos simulados
-const products = [
-    {
-        id: 1,
-        name: "iPhone 15 Pro",
-        description: "El último iPhone con chip A17 Pro y cámara de 48MP",
-        price: 1199.99,
-        category: "smartphones",
-        image: "https://assets.swappie.com/cdn-cgi/image/width=600,height=600,fit=contain,format=auto/swappie-iphone-15-pro-black-titanium-back.png?v=9f7ae122",
-        featured: true
-    },
-    {
-        id: 2,
-        name: "MacBook Air M2",
-        description: "Laptop ultradelgada con chip M2 y pantalla Retina",
-        price: 1299.99,
-        category: "laptops",
-        image: "/placeholder.svg?height=200&width=200",
-        featured: true
-    },
-    {
-        id: 3,
-        name: "iPad Pro 12.9",
-        description: "Tablet profesional con chip M2 y pantalla Liquid Retina",
-        price: 1099.99,
-        category: "tablets",
-        image: "/placeholder.svg?height=200&width=200",
-        featured: true
-    },
-    {
-        id: 4,
-        name: "AirPods Pro",
-        description: "Auriculares inalámbricos con cancelación de ruido",
-        price: 249.99,
-        category: "accesorios",
-        image: "/placeholder.svg?height=200&width=200",
-        featured: false
-    },
-    {
-        id: 5,
-        name: "Samsung Galaxy S24",
-        description: "Smartphone Android con cámara de 200MP",
-        price: 999.99,
-        category: "smartphones",
-        image: "/placeholder.svg?height=200&width=200",
-        featured: false
-    },
-    {
-        id: 6,
-        name: "Dell XPS 13",
-        description: "Laptop ultrabook con procesador Intel Core i7",
-        price: 1199.99,
-        category: "laptops",
-        image: "/placeholder.svg?height=200&width=200",
-        featured: false
-    },
-    {
-        id: 7,
-        name: "Samsung Galaxy Tab S9",
-        description: "Tablet Android con S Pen incluido",
-        price: 799.99,
-        category: "tablets",
-        image: "/placeholder.svg?height=200&width=200",
-        featured: false
-    },
-    {
-        id: 8,
-        name: "Magic Mouse",
-        description: "Mouse inalámbrico con superficie Multi-Touch",
-        price: 79.99,
-        category: "accesorios",
-        image: "/placeholder.svg?height=200&width=200",
-        featured: false
-    }
-];
+// const products = [
+//     {
+//         id: 1,
+//         name: "iPhone 15 Pro",
+//         description: "El último iPhone con chip A17 Pro y cámara de 48MP",
+//         price: 1199.99,
+//         category: "smartphones",
+//         image: "https://assets.swappie.com/cdn-cgi/image/width=600,height=600,fit=contain,format=auto/swappie-iphone-15-pro-black-titanium-back.png?v=9f7ae122",
+//         featured: true
+//     },
+//     {
+//         id: 2,
+//         name: "MacBook Air M2",
+//         description: "Laptop ultradelgada con chip M2 y pantalla Retina",
+//         price: 1299.99,
+//         category: "laptops",
+//         image: "/placeholder.svg?height=200&width=200",
+//         featured: true
+//     },
+//     {
+//         id: 3,
+//         name: "iPad Pro 12.9",
+//         description: "Tablet profesional con chip M2 y pantalla Liquid Retina",
+//         price: 1099.99,
+//         category: "tablets",
+//         image: "/placeholder.svg?height=200&width=200",
+//         featured: true
+//     },
+//     {
+//         id: 4,
+//         name: "AirPods Pro",
+//         description: "Auriculares inalámbricos con cancelación de ruido",
+//         price: 249.99,
+//         category: "accesorios",
+//         image: "/placeholder.svg?height=200&width=200",
+//         featured: false
+//     },
+//     {
+//         id: 5,
+//         name: "Samsung Galaxy S24",
+//         description: "Smartphone Android con cámara de 200MP",
+//         price: 999.99,
+//         category: "smartphones",
+//         image: "/placeholder.svg?height=200&width=200",
+//         featured: false
+//     },
+//     {
+//         id: 6,
+//         name: "Dell XPS 13",
+//         description: "Laptop ultrabook con procesador Intel Core i7",
+//         price: 1199.99,
+//         category: "laptops",
+//         image: "/placeholder.svg?height=200&width=200",
+//         featured: false
+//     },
+//     {
+//         id: 7,
+//         name: "Samsung Galaxy Tab S9",
+//         description: "Tablet Android con S Pen incluido",
+//         price: 799.99,
+//         category: "tablets",
+//         image: "/placeholder.svg?height=200&width=200",
+//         featured: false
+//     },
+//     {
+//         id: 8,
+//         name: "Magic Mouse",
+//         description: "Mouse inalámbrico con superficie Multi-Touch",
+//         price: 79.99,
+//         category: "accesorios",
+//         image: "/placeholder.svg?height=200&width=200",
+//         featured: false
+//     }
+// ];
 
 const server = 'http://127.0.0.1:9876';
 
 // Estado de la aplicación
+let products = [];
 let currentUser = null;
 let cart = [];
 let orders = [];
 let currentSection = 'home';
 
 // Inicialización
-document.addEventListener('DOMContentLoaded', function() {
-    loadUserData();
-    loadCartData();
-    loadOrdersData();
+document.addEventListener('DOMContentLoaded', async function () {
+    await loadUserData();
+    await loadProductsData();
+    await loadCartData();
+    await loadOrdersData();
+
     updateUI();
     renderProducts();
     renderFeaturedProducts();
     setupEventListeners();
 });
+;
 
 // Event Listeners
 function setupEventListeners() {
@@ -247,20 +251,37 @@ function renderProducts() {
 
 function renderFeaturedProducts() {
     const grid = document.getElementById('featured-products-grid');
-    const featuredProducts = products.filter(p => p.featured);
+    const featuredProducts = products.slice(0, 3);
     grid.innerHTML = featuredProducts.map(product => createProductCard(product)).join('');
 }
 
 function createProductCard(product) {
+    if (product.stock === 0){
+        return `
+            <div class="product-card out-of-stock">
+                <img src="${product.url_imagen}" alt="${product.nombre_modelo}" class="product-image">
+                <div class="product-info">
+                    <h3 class="product-title">${product.nombre_modelo}</h3>
+                    <p class="product-description">${product.descripcion}</p>
+                    <div class="product-price">${product.precio.toFixed(2)}€</div>
+                    <div class="product-actions">
+                        <button disabled class="btn btn-secondary">
+                            <i class="fas fa-ban"></i> Agotado
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
     return `
         <div class="product-card">
-            <img src="${product.image}" alt="${product.name}" class="product-image">
+            <img src="${product.url_imagen}" alt="${product.nombre_modelo}" class="product-image">
             <div class="product-info">
-                <h3 class="product-title">${product.name}</h3>
-                <p class="product-description">${product.description}</p>
-                <div class="product-price">$${product.price.toFixed(2)}</div>
+                <h3 class="product-title">${product.nombre_modelo}</h3>
+                <p class="product-description">${product.descripcion}</p>
+                <div class="product-price">${product.precio.toFixed(2)}€</div>
                 <div class="product-actions">
-                    <button onclick="addToCart(${product.id})" class="btn btn-primary">
+                    <button onclick="addToCart(${product.id_modelo})" class="btn btn-primary">
                         <i class="fas fa-cart-plus"></i> Agregar
                     </button>
                 </div>
@@ -276,13 +297,13 @@ function filterProducts() {
     let filteredProducts = products;
     
     if (category) {
-        filteredProducts = filteredProducts.filter(p => p.category === category);
+        filteredProducts = filteredProducts.filter(p => p.categoria === category);
     }
     
     if (search) {
         filteredProducts = filteredProducts.filter(p => 
-            p.name.toLowerCase().includes(search) || 
-            p.description.toLowerCase().includes(search)
+            p.nombre_modelo.toLowerCase().includes(search) ||
+            p.descripcion.toLowerCase().includes(search)
         );
     }
     
@@ -297,35 +318,56 @@ function addToCart(productId) {
         showNotification('Debes iniciar sesión para agregar productos al carrito', 'info');
         return;
     }
-    
-    const product = products.find(p => p.id === productId);
-    const existingItem = cart.find(item => item.id === productId);
-    
+
+    const product = products.find(p => Number(p.id_modelo) === Number(productId));
+    if (!product) {
+        console.error("Producto no encontrado:", productId);
+        return;
+    }
+
+    const existingItem = cart.find(item => Number(item.id_modelo) === Number(productId));
+
     if (existingItem) {
+        if (existingItem.quantity >= product.stock) {
+            showNotification(`No hay más stock disponible para ${product.nombre_modelo}`, 'warning');
+            return;
+        }
         existingItem.quantity += 1;
     } else {
+        if (product.stock < 1) {
+            showNotification(`Producto sin stock: ${product.nombre_modelo}`, 'warning');
+            return;
+        }
         cart.push({
             ...product,
             quantity: 1
         });
     }
-    
+
     saveCartData();
     updateCartUI();
-    showNotification(`${product.name} agregado al carrito`, 'success');
+    showNotification(`${product.nombre_modelo} agregado al carrito`, 'success');
 }
 
 function removeFromCart(productId) {
-    cart = cart.filter(item => item.id !== productId);
+    cart = cart.filter(item => Number(item.id_modelo) !== Number(productId));
     saveCartData();
     updateCartUI();
     renderCart();
 }
 
 function updateQuantity(productId, change) {
-    const item = cart.find(item => item.id === productId);
-    if (item) {
+    const item = cart.find(item => Number(item.id_modelo) === Number(productId));
+    const product = products.find(p => Number(p.id_modelo) === Number(productId));
+
+    if (item && product) {
+        if (change > 0 && item.quantity >= product.stock) {
+            showNotification(`No puedes agregar más. Stock máximo alcanzado para ${product.nombre_modelo}`, 'warning');
+            return;
+        }
+
         item.quantity += change;
+
         if (item.quantity <= 0) {
             removeFromCart(productId);
         } else {
@@ -347,7 +389,7 @@ function clearCart() {
 function renderCart() {
     const cartItems = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
-    
+
     if (cart.length === 0) {
         cartItems.innerHTML = `
             <div class="empty-state">
@@ -362,32 +404,33 @@ function renderCart() {
         cartTotal.innerHTML = '';
         return;
     }
-    
+
     cartItems.innerHTML = cart.map(item => `
         <div class="cart-item">
-            <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+            <img src="${item.url_imagen}" alt="${item.nombre_modelo}" class="cart-item-image">
             <div class="cart-item-info">
-                <h4 class="cart-item-title">${item.name}</h4>
-                <p class="cart-item-price">$${item.price.toFixed(2)}</p>
+                <h4 class="cart-item-title">${item.nombre_modelo}</h4>
+                <p class="cart-item-price">${item.precio.toFixed(2)} €</p>
             </div>
             <div class="cart-item-controls">
                 <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
+                    <button class="quantity-btn" onclick="updateQuantity(${item.id_modelo}, -1)">-</button>
                     <span>${item.quantity}</span>
-                    <button class="quantity-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                    <button class="quantity-btn" onclick="updateQuantity(${item.id_modelo}, 1)">+</button>
                 </div>
-                <button onclick="removeFromCart(${item.id})" class="btn btn-outline">
+                <button onclick="removeFromCart(${item.id_modelo})" class="btn btn-outline">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
         </div>
     `).join('');
-    
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    const total = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
     cartTotal.innerHTML = `
-        <h3>Total: $${total.toFixed(2)}</h3>
+        <h3>Total: ${total.toFixed(2)} €</h3>
     `;
 }
+
 
 // Checkout
 function showCheckout() {
@@ -604,6 +647,24 @@ function loadUserData() {
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
         currentUser = JSON.parse(savedUser);
+    }
+}
+async function loadProductsData() {
+    try {
+        let url = server + '/modelos';
+        console.log(url);
+
+        const response = await fetch(url, { method: "GET" });
+        if (!response.ok) throw new Error("Error en la respuesta del servidor");
+
+        const data = await response.json();
+        console.log("Productos cargados:", data);
+
+        products = data.data;
+        renderProducts();
+        renderFeaturedProducts();
+    } catch (error) {
+        console.error("Error al cargar los productos:", error);
     }
 }
 
