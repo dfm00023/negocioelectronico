@@ -168,6 +168,75 @@
                 <div id="orders-list"></div>
             </div>
         </section>
+
+        <!-- Product Detail Section -->
+        <section id="product-detail" class="section">
+            <div class="container">
+                <div class="product-detail-header">
+                    <button onclick="showSection('products')" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i> Volver a Productos
+                    </button>
+                </div>
+                <div class="product-detail-content">
+                    <div class="product-images">
+                        <div class="main-image">
+                            <img id="main-product-image" src="/placeholder.svg?height=400&width=400" alt="">
+                        </div>
+                        <div class="image-thumbnails">
+                            <img class="thumbnail active" onclick="changeMainImage(this)" src="/placeholder.svg?height=80&width=80" alt="">
+                            <img class="thumbnail" onclick="changeMainImage(this)" src="/placeholder.svg?height=80&width=80" alt="">
+                            <img class="thumbnail" onclick="changeMainImage(this)" src="/placeholder.svg?height=80&width=80" alt="">
+                        </div>
+                    </div>
+                    <div class="product-info-detail">
+                        <h1 id="detail-product-name"></h1>
+                        <div class="product-rating">
+                            <div class="stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <span class="rating-text">(4.5/5 - 128 reseñas)</span>
+                        </div>
+                        <div class="product-price-detail">
+                            <span id="detail-product-price"></span>
+                        </div>
+                        <div class="product-stock">
+                            <span id="stock-check"></span>
+                            <span id="detail-product-stock"></span>
+                        </div>
+                        <div class="product-description-detail">
+                            <h3>Descripción</h3>
+                            <p id="detail-product-description"></p>
+                        </div>
+                        <div class="product-specifications">
+                            <h3>Especificaciones</h3>
+                            <ul id="detail-product-specs">
+                                <li><strong>Categoría:</strong> <span id="detail-product-category"></span></li>
+                                <li><strong>Marca:</strong> <span id="detail-product-brand"></span></li>
+                                <li><strong>Modelo:</strong> <span id="detail-product-model"></span></li>
+                                <li><strong>Garantía:</strong> 2 años</li>
+                            </ul>
+                        </div>
+                        <div class="product-actions-detail">
+                            <div class="quantity-selector">
+                                <label>Cantidad:</label>
+                                <div class="quantity-controls">
+                                    <button class="quantity-btn" onclick="updateDetailQuantity(-1)">-</button>
+                                    <span id="detail-quantity">1</span>
+                                    <button class="quantity-btn" onclick="updateDetailQuantity(1)">+</button>
+                                </div>
+                            </div>
+                            <button id="detail-add-to-cart" onclick="addToCartFromDetail()" class="btn btn-primary btn-large">
+                                <i class="fas fa-cart-plus"></i> Agregar al Carrito
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- Login Modal -->
@@ -218,6 +287,13 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Tienda Online</p>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>

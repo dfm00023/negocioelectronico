@@ -258,7 +258,7 @@ function renderFeaturedProducts() {
 function createProductCard(product) {
     if (product.stock === 0){
         return `
-            <div class="product-card out-of-stock">
+            <div class="product-card out-of-stock" onclick="showProductDetail(${product.id_modelo})">
                 <img src="${product.url_imagen}" alt="${product.nombre_modelo}" class="product-image">
                 <div class="product-info">
                     <h3 class="product-title">${product.nombre_modelo}</h3>
@@ -274,14 +274,14 @@ function createProductCard(product) {
         `;
     }
     return `
-        <div class="product-card">
+        <div class="product-card" onclick="showProductDetail(${product.id_modelo})">
             <img src="${product.url_imagen}" alt="${product.nombre_modelo}" class="product-image">
             <div class="product-info">
                 <h3 class="product-title">${product.nombre_modelo}</h3>
                 <p class="product-description">${product.descripcion}</p>
                 <div class="product-price">${product.precio.toFixed(2)}€</div>
                 <div class="product-actions">
-                    <button onclick="addToCart(${product.id_modelo})" class="btn btn-primary">
+                    <button onclick="event.stopPropagation(); addToCart(${product.id_modelo})" class="btn btn-primary">
                         <i class="fas fa-cart-plus"></i> Agregar
                     </button>
                 </div>
@@ -876,4 +876,137 @@ function getNotificationColor(type) {
         case 'warning': return '#ffc107';
         default: return '#007bff';
     }
+}
+
+
+//Product Detail Functions
+let currentDetailProduct = null;
+let detailQuantity = 1;
+
+function showProductDetail(productId) {
+    const product = products.find(p => Number(p.id_modelo) === Number(productId));
+    if (!product) {
+        console.error("Producto no encontrado:", productId);
+        return;
+    }
+
+    currentDetailProduct = product;
+    detailQuantity = 1;
+
+    // Update product detail information
+    document.getElementById('detail-product-name').textContent = product.nombre_modelo;
+    document.getElementById('detail-product-price').textContent = `${product.precio.toFixed(2)}€`;
+    document.getElementById('detail-product-description').textContent = product.descripcion;
+    document.getElementById('detail-product-category').textContent = product.categoria;
+    document.getElementById('detail-product-brand').textContent = product.marca || 'TechStore';
+    document.getElementById('detail-product-model').textContent = product.nombre_modelo;
+    document.getElementById('detail-quantity').textContent = detailQuantity;
+
+    // Update stock information
+    const stockElement = document.getElementById('detail-product-stock');
+    if (product.stock > 0) {
+        document.getElementById('stock-check').innerHTML = `<i class="fas fa-check-circle"></i>`;
+        if (product.stock < 5) {
+            stockElement.innerHTML = `En stock (${product.stock} disponibles)`;
+        }else{
+            stockElement.innerHTML = `En stock`;
+        }
+        stockElement.className = 'product-stock';
+        document.getElementById('detail-add-to-cart').disabled = false;
+    } else {
+        stockElement.innerHTML = 'Sin stock';
+        stockElement.className = 'product-stock out-of-stock';
+        const btn = document.getElementById('detail-add-to-cart');
+        btn.disabled = true;
+        btn.style.backgroundColor = 'gray';
+        btn.style.borderColor = 'gray';
+        btn.style.cursor = 'not-allowed';
+    }
+    //toDo: Areglar imagenes de producto
+    // Update images (using the same image for all three thumbnails as placeholder)
+    const mainImage = document.getElementById('main-product-image');
+    const thumbnails = document.querySelectorAll('.thumbnail');
+
+    mainImage.src = product.url_imagen;
+    mainImage.alt = product.nombre_modelo;
+
+    thumbnails.forEach((thumbnail, index) => {
+        thumbnail.src = product.url_imagen;
+        thumbnail.alt = `${product.nombre_modelo} - Vista ${index + 1}`;
+        if (index === 0) {
+            thumbnail.classList.add('active');
+        } else {
+            thumbnail.classList.remove('active');
+        }
+    });
+
+    showSection('product-detail');
+}
+
+function changeMainImage(thumbnail) {
+    // Remove active class from all thumbnails
+    document.querySelectorAll('.thumbnail').forEach(thumb => {
+        thumb.classList.remove('active');
+    });
+
+    // Add active class to clicked thumbnail
+    thumbnail.classList.add('active');
+
+    // Update main image
+    const mainImage = document.getElementById('main-product-image');
+    mainImage.src = thumbnail.src;
+    mainImage.alt = thumbnail.alt;
+}
+
+function updateDetailQuantity(change) {
+    if (!currentDetailProduct) return;
+
+    const newQuantity = detailQuantity + change;
+
+    if (newQuantity < 1) {
+        detailQuantity = 1;
+    } else if (newQuantity > currentDetailProduct.stock) {
+        showNotification(`Solo hay ${currentDetailProduct.stock} unidades disponibles`, 'warning');
+        detailQuantity = currentDetailProduct.stock;
+    } else {
+        detailQuantity = newQuantity;
+    }
+
+    document.getElementById('detail-quantity').textContent = detailQuantity;
+}
+
+function addToCartFromDetail() {
+    if (!currentDetailProduct) return;
+
+    if (!currentUser) {
+        showLogin();
+        showNotification('Debes iniciar sesión para agregar productos al carrito', 'info');
+        return;
+    }
+
+    const existingItem = cart.find(item => Number(item.id_modelo) === Number(currentDetailProduct.id_modelo));
+    const totalQuantityInCart = existingItem ? existingItem.quantity : 0;
+    const availableStock = currentDetailProduct.stock - totalQuantityInCart;
+
+    if (detailQuantity > availableStock) {
+        showNotification(`Solo puedes agregar ${availableStock} unidades más al carrito`, 'warning');
+        return;
+    }
+
+    if (existingItem) {
+        existingItem.quantity += detailQuantity;
+    } else {
+        cart.push({
+            ...currentDetailProduct,
+            quantity: detailQuantity
+        });
+    }
+
+    saveCartData();
+    updateCartUI();
+    showNotification(`${detailQuantity} x ${currentDetailProduct.nombre_modelo} agregado al carrito`, 'success');
+
+    // Reset quantity to 1
+    detailQuantity = 1;
+    document.getElementById('detail-quantity').textContent = detailQuantity;
 }
