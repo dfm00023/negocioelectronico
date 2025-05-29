@@ -534,3 +534,13 @@ def add_item_route():
     except Exception as e:
         print(f"Hubo un problema al añadir el producto al pedido. Motivo: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/pedidos/gestor", methods=["GET"])
+def get_all_pedidos_gestor_route():
+    try:
+        success, estados = db.get_all_pedidos_gestor()
+
+        return jsonify({"success": success, "data": estados}), 200
+    except Exception as e:
+        print(f"Hubo un problema al obtener los estados. Motivo: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500

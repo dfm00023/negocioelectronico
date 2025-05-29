@@ -82,31 +82,37 @@
 
 <script>
     const pedidos = [
-        {
-            id: 1,
-            cliente: "Juan Pérez",
-            fecha: "2025-05-25",
-            productos: ["Camiseta", "Pantalón"],
-            total: "45.99€",
-        },
-        {
-            id: 2,
-            cliente: "Laura García",
-            fecha: "2025-05-24",
-            productos: ["Zapatillas"],
-            total: "59.95€",
-        },
-        {
-            id: 3,
-            cliente: "Carlos López",
-            fecha: "2025-05-23",
-            productos: ["Chaqueta", "Bufanda"],
-            total: "89.50€",
-        },
+
     ];
-
+    let server = "http://127.0.0.1:9876";
+    document.addEventListener("DOMContentLoaded", function() {
+        let url = server + "/pedidos/gestor";
+        try{
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    pedidos_encontrados = data.data;
+                    console.log(pedidos_encontrados);
+                    pedidos_encontrados.forEach(pedido => {
+                        pedidos.push({
+                            id: pedido.id_pedido,
+                            cliente: pedido.cliente,
+                            email: pedido.email_usuario,
+                            fecha: new Date(pedido.fecha).toLocaleDateString(),
+                            fecha_entrega: pedido.fecha_entrega,
+                            mensaje: pedido.mensaje,
+                            estado_pedido: pedido.estado_pedido,
+                        });
+                    });
+                    renderizarPedidos();
+                })
+                .catch(error => console.error("Error al cargar los pedidos:", error));
+        } catch (error) {
+            console.error("Error en la solicitud:", error);
+        }
+    });
     const contenedor = document.getElementById("contenedor-pedidos");
-
+function renderizarPedidos() {
     pedidos.forEach(pedido => {
         const col = document.createElement("div");
         col.className = "col-md-6 col-lg-4";
@@ -118,13 +124,15 @@
         <div class="pedido-titulo">Pedido #${pedido.id}</div>
         <div class="pedido-detalle">Cliente: ${pedido.cliente}</div>
         <div class="pedido-detalle">Fecha: ${pedido.fecha}</div>
-        <div class="pedido-detalle">Productos: ${pedido.productos.join(", ")}</div>
-        <div class="pedido-detalle fw-bold">Total: ${pedido.total}</div>
+        <div class="pedido-detalle">Estado: ${pedido.estado_pedido}</div>
       `;
-
+        if (pedido.mensaje){
+            card.innerHTML += `<div class="pedido-detalle">Mensaje: ${pedido.mensaje}</div>`;
+        }
         col.appendChild(card);
         contenedor.appendChild(col);
     });
+}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
