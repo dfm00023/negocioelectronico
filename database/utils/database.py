@@ -868,12 +868,12 @@ class DataBase:
                 elif estado == 'c':
                     print(f"El pedido con ID {id_pedido} esta en carrito.")
                     cursor = conn.cursor()
-                    query = "DELETE FROM pro_pedido WHERE id_pedido = ?"
+                    query = "UPDATE producto SET id_estado = 'd' WHERE id_etiqueta = (SELECT id_producto FROM pro_pedidos WHERE id_pedido = ?)"
                     values = (id_pedido,)  # Importante: La coma crea una tupla de un solo elemento
                     cursor.execute(query, values)
                     conn.commit()
                     cursor = conn.cursor()
-                    query = "UPDATE producto SET id_etiqueta = 'd' WHERE id_etiqueta = (SELECT id_producto FROM pro_pedidos WHERE id_pedido = ?)"
+                    query = "DELETE FROM pro_pedidos WHERE id_pedido = ?"
                     values = (id_pedido,)  # Importante: La coma crea una tupla de un solo elemento
                     cursor.execute(query, values)
                     conn.commit()
@@ -918,13 +918,13 @@ class DataBase:
             with self.__get_db_connection() as conn:
                 cursor = conn.cursor()
                 if id_pedido:
-                    query = "SELECT * FROM pedido WHERE id_pedido = ?"
+                    query = "SELECT p.id_pedido, p.direccion, p.email_usuario, p.fecha, p.fecha_entrega, p.mensaje, e.estado_pedido FROM pedido p, estado_pedido e WHERE e.id_estado_pedido = p.estado AND TRIM(email_usuario) = TRIM(?)"
                     cursor.execute(query, (id_pedido,))
                 elif email_usuario is not None:
-                    query = "SELECT * FROM pedido WHERE TRIM(email_usuario) = TRIM(?)"
+                    query = "SELECT p.id_pedido, p.direccion, p.email_usuario, p.fecha, p.fecha_entrega, p.mensaje, e.estado_pedido FROM pedido p, estado_pedido e WHERE e.id_estado_pedido = p.estado AND TRIM(email_usuario) = TRIM(?)"
                     cursor.execute(query, (email_usuario,))
                 else:
-                    query = "SELECT * FROM pedido"
+                    query = "SELECT p.id_pedido, p.direccion, p.email_usuario, p.fecha, p.fecha_entrega, p.mensaje, e.estado_pedido FROM pedido p, estado_pedido e WHERE e.id_estado_pedido = p.estado"
                     cursor.execute(query)
                 rows = cursor.fetchall()
                 row_list = [dict(row) for row in rows]
@@ -1020,7 +1020,7 @@ class DataBase:
         try:
             with self.__get_db_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("SELECT * FROM pro_pedidos WHERE id_pedido = ?", (id_pedido,))
+                cursor.execute("SELECT m.id_modelo, m.nombre_modelo, COUNT(p.id_etiqueta) AS cantidad, pr.precio FROM modelo m, producto p, pro_pedidos pr WHERE m.id_modelo = p.id_modelo AND p.id_etiqueta = pr.id_producto AND pr.id_pedido = ?", (id_pedido,))
                 rows = cursor.fetchall()
                 row_list = [dict(row) for row in rows]
                 return True, row_list

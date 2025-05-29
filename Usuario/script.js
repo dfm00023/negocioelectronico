@@ -487,19 +487,18 @@ async function handleCheckout(e) {
 
     correcto = await realizarPedido(order);
     console.log(correcto);
+    // Limpiar carrito
+    cart = [];
+    saveCartData();
+    updateCartUI();
     if (correcto) {
-        // Limpiar carrito
-        cart = [];
-        saveCartData();
-        updateCartUI();
-
         // Mostrar confirmación
         document.getElementById('order-number').textContent = orderNumber;
         showModal('success-modal');
 
         showNotification('¡Pedido realizado exitosamente!', 'success');
-    } else {
-        showNotification('Error al realizar el pedido. Intente realizar el pedido de nuevo o contacte con nuestro servicio técnico.', 'error');
+    }else{
+        showSection('home');
     }
 }
 
@@ -518,19 +517,30 @@ async function realizarPedido(order) {
         }
 
         // Agregar los items del pedido
+
         for(let item of order.items) {
             for (let i = 0; i < item.quantity; i++) {
                 let itemUrl = server + '/add/item?id_pedido=' + order.id + '&id_modelo=' + item.id_modelo;
                 const itemResponse = await fetch(itemUrl, {method: "GET"});
                 const itemData = await itemResponse.json();
-                console.log(itemData);
+                console.log("Item: ", itemData);
                 if (itemData.success === false) {
-                    showNotification(itemData.error, 'error');
+                    showNotification("No hay stock suficiente de todos los productos", 'error');
+                    //toDo // Si falla al agregar un item, debemos revertir los items que ya se han agregado
+                    let url = server + '/remove/pedido?id_pedido=' + order.id;
+                    const removeResponse = await fetch(url, {method: "GET"});
+                    const removeData = await removeResponse.json();
+                    console.log(removeData);
                     return false;
                 }
             }
         }
 
+        // toDO colocar el estado del pedido a preparando
+        let updateUrl = server + '/edit/pedido?estado_pedido=p&id_pedido=' + order.id;
+        const updateResponse = await fetch(updateUrl, {method: "GET"});
+        const updateData = await updateResponse.json();
+        console.log("Pedido actualizado:", updateData);
         return true;
 
     }catch (error) {
@@ -542,8 +552,8 @@ async function realizarPedido(order) {
 async function renderOrders() {
     const ordersList = document.getElementById('orders-list');
     const userOrders = await obtenerPedidosUsuario();
-    
-    if (userOrders.length === 0) {
+
+    if (!userOrders || userOrders.length === 0) {
         ordersList.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-receipt"></i>
@@ -556,48 +566,98 @@ async function renderOrders() {
         `;
         return;
     }
-    
-    ordersList.innerHTML = userOrders.map(order => `
-        <div class="order-card">
-            <div class="order-header">
-                <div>
-                    <div class="order-number">Pedido ${order.id}</div>
-                    <div class="order-date">${new Date(order.date).toLocaleDateString()}</div>
-                </div>
-                <div class="order-status">${order.status}</div>
-            </div>
-            <div class="order-items">
-                ${order.items.map(item => `
-                    <div class="order-item">
-                        <span>${item.name} x ${item.quantity}</span>
-                        <span>$${(item.price * item.quantity).toFixed(2)}</span>
+
+    ordersList.innerHTML = userOrders.map(order => {
+        const entregaHTML = (order.status.toLowerCase() === "terminado" && order.deliveryDate)
+            ? `<div class="order-delivery-date">Entregado el ${new Date(order.deliveryDate).toLocaleDateString()}</div>`
+            : "";
+
+        return `
+            <div class="order-card">
+                <div class="order-header">
+                    <div>
+                        <div class="order-number">Pedido ${order.id}</div>
+                        <div class="order-date">${new Date(order.date).toLocaleDateString()}</div>
                     </div>
-                `).join('')}
+                    <div>
+                        <div class="order-status">${order.status}</div>
+                        ${entregaHTML}
+                    </div>
+                </div>
+                <div class="order-items">
+                    ${order.items.map(item => `
+                        <div class="order-item">
+                            <span>${item.name} x ${item.quantity}</span>
+                            <span>${(item.price * item.quantity).toFixed(2)}€</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="order-total">Total: ${order.total.toFixed(2)}€</div>
             </div>
-            <div class="order-total">Total: $${order.total.toFixed(2)}</div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 async function obtenerPedidosUsuario() {
     if (!currentUser) return [];
     const url = `${server}/find/pedido?email_usuario=${currentUser.email_usuario}`;
+    console.log(url);
+    let orders = [];
     try {
         const response = await fetch(url, { method: "GET" });
 
         if (!response.ok) {
             throw new Error("Error en la respuesta del servidor");
         }
-
         const data = await response.json();
-        console.log("Pedido encontrado:", data);
+        if (data.success === false) {
+            showNotification(data.error || 'No se encontraron pedidos', 'error');
+            return [];
+        }
+        let pedidos = data.data;
+        console.log("Pedidos obtenidos:", pedidos);
+
+        for(let pedido of pedidos) {
+            let order = {
+                id: pedido.id_pedido,
+                userID: pedido.email_usuario,
+                date: pedido.fecha,
+                address: pedido.direccion,
+                message: pedido.message,
+                status: pedido.estado_pedido,
+                total: 0,
+                deliveryDate: pedido.fecha_entrega
+            };
+            // Obtener los items del pedido
+            const itemsUrl = `${server}/get/productos_por_pedido?id_pedido=${pedido.id_pedido}`;
+            const itemsResponse = await fetch(itemsUrl, { method: "GET" });
+            const itemsData = await itemsResponse.json();
+            if (itemsData.success === false) {
+                showNotification(itemsData.error || 'Error al obtener los items del pedido', 'error');
+                continue;
+            }
+            if (itemsData.data) {
+                order.items = itemsData.data.map(item => ({
+                    id_modelo: item.id_modelo,
+                    name: item.nombre_modelo,
+                    quantity: item.cantidad,
+                    price: item.precio
+                }));
+                // Calcular el total del pedido
+                order.total = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            }else{
+                order.items = [];
+            }
+            orders.push(order);
+
+        }
 
         if (data.success === false) {
             showNotification(data.error || 'Pedido no encontrado', 'error');
             return null;
         }
 
-        return data;
+        return orders;
     } catch (error) {
         console.error("Error al buscar el pedido:", error);
         showNotification("No se pudo recuperar el pedido. Inténtalo de nuevo más tarde.", 'error');

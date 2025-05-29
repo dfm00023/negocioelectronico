@@ -366,7 +366,7 @@ def add_pedido_route():
     try:
         id_pedido = args["id_pedido"]
         email_usuario = args["email_usuario"]
-        estado_pedido = args.get("estado_pedido", 'p')
+        estado_pedido = args.get("estado_pedido", 'c')
         direccion = args.get("direccion", None)
         fecha_pedido = args.get("fecha_pedido", None)
         fecha_entrega = args.get("fecha_entrega", None)
@@ -497,6 +497,9 @@ def get_productos_por_pedido_route():
         id_pedido = args["id_pedido"]
 
         success, productos = db.get_productos_by_pedido(id_pedido)
+        print(productos[0]["id_modelo"])
+        if productos[0]["id_modelo"] == None:
+            return jsonify({"success": success, "data": None}), 200
         return jsonify({"success": success, "data": productos}), 200
     except Exception as e:
         print(f"Hubo un problema al obtener productos del pedido. Motivo: {e}")
