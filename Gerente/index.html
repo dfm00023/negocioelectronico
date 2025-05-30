@@ -132,10 +132,11 @@
         // Crear listas de productos y modelos
         let productos = [];
         let modelos =[];
+        let server = "http://127.0.0.1:9876";
 
         async function fetchProducts() {
             try {
-                const response = await fetch("https://smartshopdb.xerone.es/productos");
+                const response = await fetch(server + "/productos");
                 const data = await response.json();
                 productos = data.data;
                 console.log(productos.length);
@@ -147,7 +148,7 @@
 
         async function fetchModels() {
             try {
-                const response = await fetch("https://smartshopdb.xerone.es/modelos");
+                const response = await fetch(server + "/modelos");
                 const data = await response.json();
                 modelos = data.data;
                 console.log(modelos.length);

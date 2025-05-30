@@ -92,9 +92,10 @@
 
     <script src="etiquetas.js"></script>
     <script>
+        let server = "http://127.0.0.1:9876";
         async function cargarModelos(){
             try{
-                const response = await fetch("https://smartshopdb.xerone.es/modelos");
+                const response = await fetch(server + "/modelos");
                 const data = await response.json();
                 const modelos = data.data;
                 const select = document.getElementById("id_modelo");
@@ -122,7 +123,7 @@
         let num_productos = 0;
         async function cargarModelosEnModal() {
             try {
-                const response = await fetch("https://smartshopdb.xerone.es/modelos");
+                const response = await fetch(server + "/modelos");
                 const data = await response.json();
                 const modelos = data.data;
                 const select = document.getElementById("productoSeleccionado");
@@ -195,7 +196,7 @@
             }
             console.log("Campos completos");
             // Construcción de la URL con parámetros
-            let url = `https://smartshopdb.xerone.es/add/producto?id_etiqueta=${id_etiqueta}&id_modelo=${id_modelo}&id_estado=${id_estado}`;
+            let url = server + `/add/producto?id_etiqueta=${id_etiqueta}&id_modelo=${id_modelo}&id_estado=${id_estado}`;
 
             try {
                 const response = await fetch(url, { method: "GET" });
