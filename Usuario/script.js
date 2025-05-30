@@ -536,7 +536,6 @@ async function realizarPedido(order) {
             }
         }
 
-        // toDO colocar el estado del pedido a preparando
         let updateUrl = server + '/edit/pedido?estado_pedido=p&id_pedido=' + order.id;
         const updateResponse = await fetch(updateUrl, {method: "GET"});
         const updateData = await updateResponse.json();
@@ -632,6 +631,7 @@ async function obtenerPedidosUsuario() {
             const itemsUrl = `${server}/get/productos_por_pedido?id_pedido=${pedido.id_pedido}`;
             const itemsResponse = await fetch(itemsUrl, { method: "GET" });
             const itemsData = await itemsResponse.json();
+            console.log("Productos del pedido: ", pedido.id_pedido , " = ", itemsData);
             if (itemsData.success === false) {
                 showNotification(itemsData.error || 'Error al obtener los items del pedido', 'error');
                 continue;
@@ -898,8 +898,6 @@ function showProductDetail(productId) {
     document.getElementById('detail-product-price').textContent = `${product.precio.toFixed(2)}€`;
     document.getElementById('detail-product-description').textContent = product.descripcion;
     document.getElementById('detail-product-category').textContent = product.categoria;
-    document.getElementById('detail-product-brand').textContent = product.marca || 'TechStore';
-    document.getElementById('detail-product-model').textContent = product.nombre_modelo;
     document.getElementById('detail-quantity').textContent = detailQuantity;
 
     // Update stock information
@@ -922,6 +920,7 @@ function showProductDetail(productId) {
         btn.style.borderColor = 'gray';
         btn.style.cursor = 'not-allowed';
     }
+    const imageUrls = [product.url_imagen, product.imagen2, product.imagen3].filter(Boolean); // Filtra valores nulos o vacíos
     //toDo: Areglar imagenes de producto
     // Update images (using the same image for all three thumbnails as placeholder)
     const mainImage = document.getElementById('main-product-image');
@@ -931,8 +930,13 @@ function showProductDetail(productId) {
     mainImage.alt = product.nombre_modelo;
 
     thumbnails.forEach((thumbnail, index) => {
-        thumbnail.src = product.url_imagen;
-        thumbnail.alt = `${product.nombre_modelo} - Vista ${index + 1}`;
+        if (imageUrls[index]) {
+            thumbnail.src = imageUrls[index];
+            thumbnail.alt = `${product.nombre_modelo} - Vista ${index + 1}`;
+            thumbnail.style.display = ''; // Asegúrate de mostrarla
+        } else {
+            thumbnail.style.display = 'none'; // Oculta las miniaturas que no se usan
+        }
         if (index === 0) {
             thumbnail.classList.add('active');
         } else {

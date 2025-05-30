@@ -84,6 +84,8 @@ def add_modelo_route():
         url_imagen = args.get("url_imagen", None) # Optional, default to None
         estante = args.get("estante", None)  # Optional, default to None
         pasillo = args.get("pasillo", None)  # Optional, default to None
+        imagen2 = args.get("imagen2", None)  # Optional, default to None
+        imagen3 = args.get("imagen3", None)  # Optional, default to None
 
         success, modelo = db.add_modelo(id_modelo,
                                         nombre_modelo,
@@ -92,7 +94,9 @@ def add_modelo_route():
                                         categoria,
                                         url_imagen if url_imagen else "NULL",
                                         int(estante) if estante else "NULL",
-                                        int(pasillo) if pasillo else "NULL")
+                                        int(pasillo) if pasillo else "NULL",
+                                        imagen2 if imagen2 else "NULL",
+                                        imagen3 if imagen3 else "NULL")
         return jsonify({"success": success, "data": modelo}), 200
     except Exception as e:
         print(f"Hubo un problema al insertar el modelo. Motivo: {e}")
@@ -131,7 +135,9 @@ def edit_modelo_route():
         url_imagen = args.get("url_imagen", None) # Optional, default to None
         estante = args.get("estante", None)  # Optional, default to None
         pasillo = args.get("pasillo", None)  # Optional, default to None
-        print(f"Recibidos los datos del modelo: {id_modelo}, {nombre_modelo}, {precio}, {descripcion}, {categoria}, {url_imagen}, {estante}, {pasillo}")
+        imagen2 = args.get("imagen2", None)  # Optional, default to None
+        imagen3 = args.get("imagen3", None)  # Optional, default to None
+        print(f"Recibidos los datos del modelo: {id_modelo}, {nombre_modelo}, {precio}, {descripcion}, {categoria}, {url_imagen}, {estante}, {pasillo}, {imagen2}, {imagen3}")
 
         success, modelo = db.edit_modelo(id_modelo,
                                         nombre_modelo,
@@ -140,7 +146,9 @@ def edit_modelo_route():
                                         categoria if categoria else None,
                                         url_imagen if url_imagen else None,
                                         int(estante) if estante else None,
-                                        int(pasillo) if pasillo else None)
+                                        int(pasillo) if pasillo else None,
+                                        imagen2 if imagen2 else None,
+                                        imagen3 if imagen3 else None)
         return jsonify({"success": success, "data": modelo}), 200
     except Exception as e:
         print(f"Hubo un problema al editar el modelo. Motivo: {e}")
@@ -371,7 +379,7 @@ def add_pedido_route():
         fecha_pedido = args.get("fecha_pedido", None)
         fecha_entrega = args.get("fecha_entrega", None)
         mensaje = args.get("mensaje", None)
-
+        print(f"Recibidos los datos del pedido: {id_pedido}, {email_usuario}, {estado_pedido}, {direccion}, {fecha_pedido}, {fecha_entrega}, {mensaje}")
 
         success, pedido = db.add_pedido(id_pedido, email_usuario, estado_pedido, direccion, fecha_pedido, fecha_entrega, mensaje)
         return jsonify({"success": success, "data": pedido}), 200

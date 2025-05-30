@@ -117,6 +117,16 @@
                         <input type="text" id="modalImagen" class="form-control">
                         <img id="modalImagenPreview" src="" alt="Vista previa" class="img-fluid mt-2" style="max-height: 150px;">
                     </div>
+                    <div class="mb-3">
+                        <label for="modalImagen2" class="form-label">Imagen 2</label>
+                        <input type="text" id="modalImagen2" class="form-control">
+                        <img id="modalImagen2Preview" src="" alt="Vista previa" class="img-fluid mt-2" style="max-height: 150px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalImagen3" class="form-label">Imagen 3</label>
+                        <input type="text" id="modalImagen3" class="form-control">
+                        <img id="modalImagen3Preview" src="" alt="Vista previa" class="img-fluid mt-2" style="max-height: 150px;">
+                    </div>
 
                 </div>
                 <div class="modal-footer">
@@ -166,7 +176,18 @@
                         </div>
                         <div class="mb-3">
                             <label for="imagen" class="form-label">URL de la Imagen</label>
-                            <input type="url" id="imagen" class="form-control" oninput="mostrarVistaPrevia()">
+                            <input type="url" id="imagen" class="form-control" oninput="mostrarVistaPrevia(1)">
+                            <img id="previewImagen" src="" alt="Vista previa de la imagen" class="img-fluid rounded shadow" style="max-height: 200px; display: none;">
+                        </div>
+                        <div class="mb-3">
+                            <label for="imagen2" class="form-label">Imagen 2</label>
+                            <input type="url" id="imagen2" class="form-control" oninput="mostrarVistaPrevia(2)">
+                            <img id="previewImagen2" src="" alt="Vista previa de la imagen" class="img-fluid rounded shadow" style="max-height: 200px; display: none;">
+                        </div>
+                        <div class="mb-3">
+                            <label for="imagen3" class="form-label">Imagen 3</label>
+                            <input type="url" id="imagen3" class="form-control" oninput="mostrarVistaPrevia(3)">
+                            <img id="previewImagen3" src="" alt="Vista previa de la imagen" class="img-fluid rounded shadow" style="max-height: 200px; display: none;">
                         </div>
                         <div class="text-center mb-4">
                             <img id="previewImagen" src="" alt="Vista previa de la imagen" class="img-fluid rounded shadow" style="max-height: 200px; display: none;">
@@ -280,6 +301,10 @@
             document.getElementById("modalStock").value = producto.stock;
             document.getElementById("modalImagen").value = producto.url_imagen;
             document.getElementById("modalImagenPreview").src = producto.url_imagen;
+            document.getElementById("modalImagen2").value = producto.imagen2;
+            document.getElementById("modalImagen2Preview").src = producto.imagen2;
+            document.getElementById("modalImagen3").value = producto.imagen3;
+            document.getElementById("modalImagen3Preview").src = producto.imagen3;
 
             let modal = new bootstrap.Modal(document.getElementById("productoModal"));
             modal.show();
@@ -294,11 +319,13 @@
             const pasillo = document.getElementById("modalPasillo").value;
             const estante = document.getElementById("modalEstante").value;
             const imagen = document.getElementById("modalImagen").value;
+            const imagen2 = document.getElementById("modalImagen2").value;
+            const imagen3 = document.getElementById("modalImagen3").value;
 
-            const productoEditado = { id, nombre, precio, descripcion, categoria, pasillo, estante, imagen };
+            const productoEditado = { id, nombre, precio, descripcion, categoria, pasillo, estante, imagen, imagen2, imagen3 };
 
             try {
-                let url= `http://127.0.0.1:9876/edit/modelo?id_modelo=${id}&nombre_modelo=${nombre}&precio=${precio}&descripcion=${descripcion}&categoria=${categoria}&pasillo=${pasillo}&estante=${estante}&url_imagen=${imagen}`;
+                let url= `http://127.0.0.1:9876/edit/modelo?id_modelo=${id}&nombre_modelo=${nombre}&precio=${precio}&descripcion=${descripcion}&categoria=${categoria}&pasillo=${pasillo}&estante=${estante}&url_imagen=${imagen}&imagen2=${imagen2}&imagen3=${imagen3}`;
                 console.log(url);
                 fetch(url, { method: "GET" })
                     .then(response => {
@@ -337,6 +364,8 @@
             const pasillo = document.getElementById("pasillo").value;
             const estante = document.getElementById("estante").value;
             const url_imagen = document.getElementById("imagen").value;
+            const imagen2 = document.getElementById("imagen2").value;
+            const imagen3 = document.getElementById("imagen3").value;
 
             // Construcción de la URL con parámetros
             let url = `http://127.0.0.1:9876/add/modelo?id_modelo=${id_modelo}&nombre_modelo=${nombre_modelo}&precio=${precio}`;
@@ -354,6 +383,12 @@
             }
             if (url_imagen){
                 url += `&url_imagen=${url_imagen}`;
+            }
+            if(imagen2){
+                url += `&imagen2=${imagen2}`;
+            }
+            if(imagen3){
+                url += `&imagen3=${imagen3}`;
             }
 
             try {
@@ -379,17 +414,21 @@
             }
         });
         // Función para mostrar la vista previa de la imagen
-        function mostrarVistaPrevia() {
-            const url = document.getElementById("imagen").value;
-            const preview = document.getElementById("previewImagen");
+        function mostrarVistaPrevia(numero) {
+            const input = document.getElementById(`imagen${numero === 1 ? '' : numero}`);
+            const preview = document.getElementById(`previewImagen${numero === 1 ? '' : numero}`);
 
-            if (url) {
-                preview.src = url;
-                preview.style.display = "block";
-            } else {
-                preview.style.display = "none";
+            if (input && preview) {
+                const url = input.value;
+                if (url) {
+                    preview.src = url;
+                    preview.style.display = "block";
+                } else {
+                    preview.style.display = "none";
+                }
             }
         }
+
         function borrarVistaPrevia() {
             const preview = document.getElementById("previewImagen");
             preview.src = "";

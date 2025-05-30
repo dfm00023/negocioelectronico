@@ -55,7 +55,9 @@ class DataBase:
                             categoria VARCHAR(20),
                             url_imagen TEXT,
                             estante INTEGER,
-                            pasillo INTEGER
+                            pasillo INTEGER,
+                            imagen2 TEXT,
+                            imagen3 TEXT
                         );
                     """)
                 except sqlite3.OperationalError:
@@ -100,6 +102,11 @@ class DataBase:
                     pass
 
                 try:
+                    cursor.execute("INSERT INTO estado_pedido (id_estado_pedido, estado_pedido) VALUES ('c', 'carrito')")
+                except sqlite3.IntegrityError:
+                    pass
+
+                try:
                     cursor.execute("INSERT INTO estado_pedido (id_estado_pedido, estado_pedido) VALUES ('p', 'preparando')")
                 except sqlite3.IntegrityError:
                     pass
@@ -111,6 +118,11 @@ class DataBase:
 
                 try:
                     cursor.execute("INSERT INTO estado_pedido (id_estado_pedido, estado_pedido) VALUES ('t', 'terminado')")
+                except sqlite3.IntegrityError:
+                    pass
+
+                try:
+                    cursor.execute("INSERT INTO estado_pedido (id_estado_pedido, estado_pedido) VALUES ('ca', 'cancelado')")
                 except sqlite3.IntegrityError:
                     pass
 
@@ -241,6 +253,8 @@ class DataBase:
                         m.url_imagen,
                         m.estante,
                         m.pasillo,
+                        m.imagen2,
+                        m.imagen3,
                         COUNT(p.id_modelo) AS "stock"
                     FROM
                         modelo m
@@ -254,7 +268,9 @@ class DataBase:
                         m.categoria,
                         m.url_imagen,
                         m.estante,
-                        m.pasillo
+                        m.pasillo,
+                        m.imagen2,
+                        m.imagen3
                     ORDER BY
                         m.nombre_modelo;
                 """)
@@ -284,7 +300,7 @@ class DataBase:
             return False, None
 
     def add_modelo(self, id_modelo: str, nombre_modelo: str, precio: float, descripcion: Optional[str] = "NULL", categoria: Optional[str] = "NULL", url_imagen: Optional[str] = "NULL", estante: Optional[int] = "NULL",
-                   pasillo: Optional[int] = "NULL") -> tuple[bool, Optional[list[dict]]]:
+                   pasillo: Optional[int] = "NULL", imagen2: Optional[str] = "NULL", imagen3: Optional[str] = "NULL") -> tuple[bool, Optional[list[dict]]]:
         """
         Agrega un nuevo modelo a la base de datos.
 
@@ -297,6 +313,8 @@ class DataBase:
             url_imagen (Optional[str]): Enlace a la imagen. Opcional, puede ser None.
             estante (Optional[int]): El número de estante donde se ubica el modelo. Opcional, puede ser None.
             pasillo (Optional[int]): El número de pasillo donde se ubica el modelo. Opcional, puede ser None.
+            imagen2 (Optional[str]): Enlace a una segunda imagen del modelo. Opcional, puede ser None.
+            imagen3 (Optional[str]): Enlace a una tercera imagen del modelo. Opcional, puede ser None.
 
         Returns:
             tuple[bool, Optional[list[dict]]]: Una tupla que indica si la operación fue exitosa (True/False) y, en caso de éxito, una cadena JSON con los detalles del modelo insertado. Si falla, devuelve None.
@@ -304,8 +322,8 @@ class DataBase:
         try:
             with self.__get_db_connection() as conn:
                 cursor = conn.cursor()
-                query = "INSERT INTO modelo (id_modelo, nombre_modelo, precio, descripcion, categoria, url_imagen, estante, pasillo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-                values = (id_modelo, nombre_modelo, precio, descripcion, categoria, url_imagen, estante, pasillo)
+                query = "INSERT INTO modelo (id_modelo, nombre_modelo, precio, descripcion, categoria, url_imagen, estante, pasillo, imagen2, imagen3) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                values = (id_modelo, nombre_modelo, precio, descripcion, categoria, url_imagen, estante, pasillo, imagen2, imagen3)
                 cursor.execute(query, values)
                 conn.commit()
                 # Una vez confirmados los cambios se obtiene el elemento insertado para devolverlo en la confirmación.
@@ -318,7 +336,7 @@ class DataBase:
             return False, None
 
     def edit_modelo(self, id_modelo: str, nombre_modelo: str = None, precio: Optional[float] = None, descripcion: Optional[str] = None, categoria: Optional[str] = None, url_imagen: Optional[str] = None, estante: Optional[int] = None,
-                   pasillo: Optional[int] = None) -> tuple[bool, Optional[list[dict]]]:
+                   pasillo: Optional[int] = None, imagen2: Optional[str] ="NULL", imagen3: Optional[str] = "NULL") -> tuple[bool, Optional[list[dict]]]:
         """
         Edita un modelo de la base de datos.
 
@@ -331,6 +349,8 @@ class DataBase:
             url_imagen (Optional[str]): Enlace a la imagen. Opcional, puede ser None.
             estante (Optional[int]): El número de estante donde se ubica el modelo. Opcional, puede ser None.
             pasillo (Optional[int]): El número de pasillo donde se ubica el modelo. Opcional, puede ser None.
+            imagen2 (Optional[str]): Enlace a una segunda imagen del modelo. Opcional, puede ser None.
+            imagen3 (Optional[str]): Enlace a una tercera imagen del modelo. Opcional, puede ser None.
 
         Returns:
             tuple[bool, Optional[list[dict]]]: Una tupla que indica si la operación fue exitosa (True/False) y, en caso de éxito, una cadena JSON con los detalles del modelo insertado. Si falla, devuelve None.
@@ -341,8 +361,8 @@ class DataBase:
 
                 # Se guardan el nombre de la columna y su valor en pares.
                 pairs = zip(
-                    ['nombre_modelo', 'precio', 'descripcion', 'categoria', 'url_imagen', 'estante', 'pasillo'], # Nombre columna
-                    [nombre_modelo, precio,descripcion, categoria, url_imagen, estante, pasillo] # Valor
+                    ['nombre_modelo', 'precio', 'descripcion', 'categoria', 'url_imagen', 'estante', 'pasillo', 'imagen2', 'imagen3'], # Nombre columna
+                    [nombre_modelo, precio,descripcion, categoria, url_imagen, estante, pasillo, imagen2, imagen3] # Valor
                 )
 
                 # Se filtran por los que sí tienen un valor que modificar.
@@ -1020,7 +1040,7 @@ class DataBase:
         try:
             with self.__get_db_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("SELECT m.id_modelo, m.nombre_modelo, COUNT(p.id_etiqueta) AS cantidad, pr.precio FROM modelo m, producto p, pro_pedidos pr WHERE m.id_modelo = p.id_modelo AND p.id_etiqueta = pr.id_producto AND pr.id_pedido = ?", (id_pedido,))
+                cursor.execute("SELECT m.id_modelo, m.nombre_modelo, COUNT(p.id_etiqueta) AS cantidad, pr.precio FROM modelo m, producto p, pro_pedidos pr WHERE m.id_modelo = p.id_modelo AND p.id_etiqueta = pr.id_producto AND pr.id_pedido = ? GROUP BY m.id_modelo, m.nombre_modelo, pr.precio", (id_pedido,))
                 rows = cursor.fetchall()
                 row_list = [dict(row) for row in rows]
                 return True, row_list
