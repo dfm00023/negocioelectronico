@@ -897,10 +897,10 @@ class DataBase:
                     values = (id_pedido,)  # Importante: La coma crea una tupla de un solo elemento
                     cursor.execute(query, values)
                     conn.commit()
-                elif estado == 't':
-                    print(f"El pedido con ID {id_pedido} esta terminado.")
+                elif estado == 't' or estado == 'ca':
+                    print(f"El pedido con ID {id_pedido} esta terminado o cancelado.")
                     cursor = conn.cursor()
-                    query = "DELETE FROM pro_pedido WHERE id_pedido = ?"
+                    query = "DELETE FROM pro_pedidos WHERE id_pedido = ?"
                     values = (id_pedido,)  # Importante: La coma crea una tupla de un solo elemento
                     cursor.execute(query, values)
                     conn.commit()
@@ -1087,6 +1087,24 @@ class DataBase:
             with self.__get_db_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("SELECT p.id_pedido, p.direccion, p.email_usuario, p.fecha, p.fecha_entrega, p.mensaje, e.estado_pedido, u.nombre_usuario || ' ' || u.apellidos AS cliente FROM pedido p, estado_pedido e, usuario u WHERE e.id_estado_pedido = p.estado AND p.email_usuario = u.email_usuario AND e.id_estado_pedido IS NOT 't'")
+                rows = cursor.fetchall()
+                row_list = [dict(row) for row in rows]
+                return True, row_list
+        except sqlite3.Error as e:
+            print(f"Hubo un problema con la base de datos. Motivo: {e}")
+            return False, None
+
+    def get_all_pedidos_terminados_gestor(self) -> tuple[bool, Optional[list[dict]]]:
+        """
+        Obtiene todos los pedidos posibles.
+
+        Returns:
+            tuple: Una tupla donde el primer elemento indica si hubo éxito o no y el segundo un diccionario con los pedidos posibles o None en caso de error.
+        """
+        try:
+            with self.__get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT p.id_pedido, p.direccion, p.email_usuario, p.fecha, p.fecha_entrega, p.mensaje, e.estado_pedido, u.nombre_usuario || ' ' || u.apellidos AS cliente FROM pedido p, estado_pedido e, usuario u WHERE e.id_estado_pedido = p.estado AND p.email_usuario = u.email_usuario AND (e.id_estado_pedido IS 't' OR e.id_estado_pedido IS 'ca')")
                 rows = cursor.fetchall()
                 row_list = [dict(row) for row in rows]
                 return True, row_list
