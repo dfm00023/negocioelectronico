@@ -498,7 +498,7 @@ async function handleCheckout(e) {
 
         showNotification('¡Pedido realizado exitosamente!', 'success');
     }else{
-        showSection('home');
+        location.reload();
     }
 }
 
