@@ -2,7 +2,7 @@ from datetime import datetime
 
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
-from utils.database import DataBase
+from database.utils.database import DataBase
 
 db = DataBase("db/smart_shop.db")
 app = Flask(__name__)

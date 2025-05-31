@@ -1115,3 +1115,4 @@ class DataBase:
         except sqlite3.Error as e:
             print(f"Hubo un problema con la base de datos. Motivo: {e}")
             return False, None
+
