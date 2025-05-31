@@ -11,7 +11,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="index.html">
-            <img src="logo_blanco_horizontal.png" alt="Smartshop Logo" height="40">
+            <img src="./logo/logo_blanco.png" alt="Smartshop Logo" height="40">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#menu" aria-controls="menu" aria-expanded="false"
@@ -188,9 +188,6 @@
                             <input type="url" id="imagen3" class="form-control" oninput="mostrarVistaPrevia(3)">
                             <img id="previewImagen3" src="" alt="Vista previa de la imagen" class="img-fluid rounded shadow" style="max-height: 200px; display: none;">
                         </div>
-                        <div class="text-center mb-4">
-                            <img id="previewImagen" src="" alt="Vista previa de la imagen" class="img-fluid rounded shadow" style="max-height: 200px; display: none;">
-                        </div>
                         <button type="submit" class="btn btn-success w-100">Guardar Modelo</button>
                         <div id="mensaje" class="mt-3 text-center"></div>
                     </form>
@@ -203,10 +200,11 @@
     <script>
         let products = [];
         let num_productos = 0;
+        let server = "http://sine.djpyru.es:9876";
 
         async function fetchProducts() {
             try {
-                const response = await fetch("http://127.0.0.1:9876/modelos");
+                const response = await fetch(server + "/modelos");
                 const data = await response.json();
                 products = data.data;
                 console.log(products.length);
@@ -229,7 +227,7 @@
                 fila.setAttribute("id", `producto-${producto.id_modelo}`);
 
                 fila.innerHTML = `
-                    <td><img src="${producto.url_imagen || 'http://127.0.0.1:9876/img404'}" alt="Imagen" width="50" height="50"></td>
+                    <td><img src="${producto.url_imagen || server + '/img404'}" alt="Imagen" width="50" height="50"></td>
                     <td>${producto.nombre_modelo}</td>
                     <td>${producto.precio} €</td>
                     <td>${producto.descripcion || ''}</td>
@@ -263,7 +261,7 @@
         function eliminarProducto(productoId) {
             if (confirm("¿Estás seguro de que deseas eliminar este modelo?")) {
                 console.log(productoId);
-                let url= `http://127.0.0.1:9876/remove/modelo?id_modelo=${productoId}`;
+                let url= server + `/remove/modelo?id_modelo=${productoId}`;
                 fetch(url, { method: "GET" })
                     .then(response => {
                         if (!response.ok) throw new Error("Error en la respuesta del servidor");
@@ -324,7 +322,7 @@
             const productoEditado = { id, nombre, precio, descripcion, categoria, pasillo, estante, imagen, imagen2, imagen3 };
 
             try {
-                let url= `http://127.0.0.1:9876/edit/modelo?id_modelo=${id}&nombre_modelo=${nombre}&precio=${precio}&descripcion=${descripcion}&categoria=${categoria}&pasillo=${pasillo}&estante=${estante}&url_imagen=${imagen}&imagen2=${imagen2}&imagen3=${imagen3}`;
+                let url= server + `/edit/modelo?id_modelo=${id}&nombre_modelo=${nombre}&precio=${precio}&descripcion=${descripcion}&categoria=${categoria}&pasillo=${pasillo}&estante=${estante}&url_imagen=${imagen}&imagen2=${imagen2}&imagen3=${imagen3}`;
                 console.log(url);
                 fetch(url, { method: "GET" })
                     .then(response => {
@@ -367,7 +365,7 @@
             const imagen3 = document.getElementById("imagen3").value;
 
             // Construcción de la URL con parámetros
-            let url = `http://127.0.0.1:9876/add/modelo?id_modelo=${id_modelo}&nombre_modelo=${nombre_modelo}&precio=${precio}`;
+            let url = server + `/add/modelo?id_modelo=${id_modelo}&nombre_modelo=${nombre_modelo}&precio=${precio}`;
             if (descripcion){
                 url += `&descripcion=${descripcion}`;
             }

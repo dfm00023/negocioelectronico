@@ -1,5 +1,4 @@
 import sqlite3
-from idlelib.pyshell import use_subprocess
 from typing import Optional
 
 class DataBase:

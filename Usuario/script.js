@@ -74,7 +74,7 @@
 //     }
 // ];
 
-const server = 'http://127.0.0.1:9876';
+const server = 'http://sine.djpyru.es:9876';
 
 // Estado de la aplicación
 let products = [];
