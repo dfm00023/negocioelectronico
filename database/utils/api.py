@@ -86,6 +86,7 @@ def add_modelo_route():
         pasillo = args.get("pasillo", None)  # Optional, default to None
         imagen2 = args.get("imagen2", None)  # Optional, default to None
         imagen3 = args.get("imagen3", None)  # Optional, default to None
+        destacado = args.get("destacado", None)  # Optional, default to None
 
         success, modelo = db.add_modelo(id_modelo,
                                         nombre_modelo,
@@ -96,7 +97,8 @@ def add_modelo_route():
                                         int(estante) if estante else "NULL",
                                         int(pasillo) if pasillo else "NULL",
                                         imagen2 if imagen2 else "NULL",
-                                        imagen3 if imagen3 else "NULL")
+                                        imagen3 if imagen3 else "NULL",
+                                        destacado if destacado else 0)
         return jsonify({"success": success, "data": modelo}), 200
     except Exception as e:
         print(f"Hubo un problema al insertar el modelo. Motivo: {e}")
@@ -137,7 +139,8 @@ def edit_modelo_route():
         pasillo = args.get("pasillo", None)  # Optional, default to None
         imagen2 = args.get("imagen2", None)  # Optional, default to None
         imagen3 = args.get("imagen3", None)  # Optional, default to None
-        print(f"Recibidos los datos del modelo: {id_modelo}, {nombre_modelo}, {precio}, {descripcion}, {categoria}, {url_imagen}, {estante}, {pasillo}, {imagen2}, {imagen3}")
+        destacado = args.get("destacado", None)  # Optional, default to None
+        print(f"Recibidos los datos del modelo: {id_modelo}, {nombre_modelo}, {precio}, {descripcion}, {categoria}, {url_imagen}, {estante}, {pasillo}, {imagen2}, {imagen3}, {destacado}")
 
         success, modelo = db.edit_modelo(id_modelo,
                                         nombre_modelo,
@@ -148,7 +151,8 @@ def edit_modelo_route():
                                         int(estante) if estante else None,
                                         int(pasillo) if pasillo else None,
                                         imagen2 if imagen2 else None,
-                                        imagen3 if imagen3 else None)
+                                        imagen3 if imagen3 else None,
+                                         destacado if destacado else None)
         return jsonify({"success": success, "data": modelo}), 200
     except Exception as e:
         print(f"Hubo un problema al editar el modelo. Motivo: {e}")

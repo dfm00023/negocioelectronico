@@ -56,7 +56,8 @@ class DataBase:
                             estante INTEGER,
                             pasillo INTEGER,
                             imagen2 TEXT,
-                            imagen3 TEXT
+                            imagen3 TEXT,
+                            destacado BOOLEAN DEFAULT 0
                         );
                     """)
                 except sqlite3.OperationalError:
@@ -254,6 +255,7 @@ class DataBase:
                         m.pasillo,
                         m.imagen2,
                         m.imagen3,
+                        m.destacado,
                         COUNT(p.id_modelo) AS "stock"
                     FROM
                         modelo m
@@ -269,7 +271,8 @@ class DataBase:
                         m.estante,
                         m.pasillo,
                         m.imagen2,
-                        m.imagen3
+                        m.imagen3,
+                        m.destacado
                     ORDER BY
                         m.nombre_modelo;
                 """)
@@ -299,7 +302,7 @@ class DataBase:
             return False, None
 
     def add_modelo(self, id_modelo: str, nombre_modelo: str, precio: float, descripcion: Optional[str] = "NULL", categoria: Optional[str] = "NULL", url_imagen: Optional[str] = "NULL", estante: Optional[int] = "NULL",
-                   pasillo: Optional[int] = "NULL", imagen2: Optional[str] = "NULL", imagen3: Optional[str] = "NULL") -> tuple[bool, Optional[list[dict]]]:
+                   pasillo: Optional[int] = "NULL", imagen2: Optional[str] = "NULL", imagen3: Optional[str] = "NULL", destacado: Optional[bool] = 0) -> tuple[bool, Optional[list[dict]]]:
         """
         Agrega un nuevo modelo a la base de datos.
 
@@ -314,6 +317,7 @@ class DataBase:
             pasillo (Optional[int]): El número de pasillo donde se ubica el modelo. Opcional, puede ser None.
             imagen2 (Optional[str]): Enlace a una segunda imagen del modelo. Opcional, puede ser None.
             imagen3 (Optional[str]): Enlace a una tercera imagen del modelo. Opcional, puede ser None.
+            destacado (bool): Indica si el modelo es destacado. Por defecto es False.
 
         Returns:
             tuple[bool, Optional[list[dict]]]: Una tupla que indica si la operación fue exitosa (True/False) y, en caso de éxito, una cadena JSON con los detalles del modelo insertado. Si falla, devuelve None.
@@ -321,8 +325,8 @@ class DataBase:
         try:
             with self.__get_db_connection() as conn:
                 cursor = conn.cursor()
-                query = "INSERT INTO modelo (id_modelo, nombre_modelo, precio, descripcion, categoria, url_imagen, estante, pasillo, imagen2, imagen3) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-                values = (id_modelo, nombre_modelo, precio, descripcion, categoria, url_imagen, estante, pasillo, imagen2, imagen3)
+                query = "INSERT INTO modelo (id_modelo, nombre_modelo, precio, descripcion, categoria, url_imagen, estante, pasillo, imagen2, imagen3, destacado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                values = (id_modelo, nombre_modelo, precio, descripcion, categoria, url_imagen, estante, pasillo, imagen2, imagen3, destacado)
                 cursor.execute(query, values)
                 conn.commit()
                 # Una vez confirmados los cambios se obtiene el elemento insertado para devolverlo en la confirmación.
@@ -335,7 +339,7 @@ class DataBase:
             return False, None
 
     def edit_modelo(self, id_modelo: str, nombre_modelo: str = None, precio: Optional[float] = None, descripcion: Optional[str] = None, categoria: Optional[str] = None, url_imagen: Optional[str] = None, estante: Optional[int] = None,
-                   pasillo: Optional[int] = None, imagen2: Optional[str] ="NULL", imagen3: Optional[str] = "NULL") -> tuple[bool, Optional[list[dict]]]:
+                   pasillo: Optional[int] = None, imagen2: Optional[str] ="NULL", imagen3: Optional[str] = "NULL", destacado: Optional[bool] = 0) -> tuple[bool, Optional[list[dict]]]:
         """
         Edita un modelo de la base de datos.
 
@@ -350,6 +354,7 @@ class DataBase:
             pasillo (Optional[int]): El número de pasillo donde se ubica el modelo. Opcional, puede ser None.
             imagen2 (Optional[str]): Enlace a una segunda imagen del modelo. Opcional, puede ser None.
             imagen3 (Optional[str]): Enlace a una tercera imagen del modelo. Opcional, puede ser None.
+            destacado (Optional[bool]): Indica si el modelo es destacado. Por defecto es False.
 
         Returns:
             tuple[bool, Optional[list[dict]]]: Una tupla que indica si la operación fue exitosa (True/False) y, en caso de éxito, una cadena JSON con los detalles del modelo insertado. Si falla, devuelve None.
@@ -360,8 +365,8 @@ class DataBase:
 
                 # Se guardan el nombre de la columna y su valor en pares.
                 pairs = zip(
-                    ['nombre_modelo', 'precio', 'descripcion', 'categoria', 'url_imagen', 'estante', 'pasillo', 'imagen2', 'imagen3'], # Nombre columna
-                    [nombre_modelo, precio,descripcion, categoria, url_imagen, estante, pasillo, imagen2, imagen3] # Valor
+                    ['nombre_modelo', 'precio', 'descripcion', 'categoria', 'url_imagen', 'estante', 'pasillo', 'imagen2', 'imagen3', 'destacado'], # Nombre columna
+                    [nombre_modelo, precio,descripcion, categoria, url_imagen, estante, pasillo, imagen2, imagen3, destacado] # Valor
                 )
 
                 # Se filtran por los que sí tienen un valor que modificar.

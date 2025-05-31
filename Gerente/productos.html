@@ -54,6 +54,7 @@
                 <thead>
                 <tr>
                     <th></th>
+                    <th>Destacado</th>
                     <th>Nombre</th>
                     <th>Precio</th>
                     <th>Descripción</th>
@@ -115,6 +116,14 @@
                     <div class="mb-3">
                         <label for="modalStock" class="form-label">Stock</label>
                         <input type="text" id="modalStock" class="form-control" disabled>
+                    </div>
+
+                    <!-- Checkbox de destacado -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="modalDestacado">
+                        <label class="form-check-label" for="modalDestacado">
+                            Destacado
+                        </label>
                     </div>
 
                     <div class="mb-3">
@@ -179,6 +188,15 @@
                             <label for="estante" class="form-label">Estante</label>
                             <input type="text" id="estante" class="form-control" >
                         </div>
+
+                        <!-- Checkbox de destacado -->
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="destacado">
+                            <label class="form-check-label" for="destacado">
+                                Destacado
+                            </label>
+                        </div>
+
                         <div class="mb-3">
                             <label for="imagen" class="form-label">URL de la Imagen</label>
                             <input type="url" id="imagen" class="form-control" oninput="mostrarVistaPrevia(1)">
@@ -234,6 +252,7 @@
 
                 fila.innerHTML = `
                     <td><img src="${producto.url_imagen || server + '/img404'}" alt="Imagen" width="50" height="50"></td>
+                    <td>${producto.destacado ? '⭐ Sí' : 'No'}</td>
                     <td>${producto.nombre_modelo}</td>
                     <td>${producto.precio} €</td>
                     <td>${producto.descripcion || ''}</td>
@@ -308,6 +327,7 @@
             document.getElementById("modalImagen2Preview").src = producto.imagen2;
             document.getElementById("modalImagen3").value = producto.imagen3;
             document.getElementById("modalImagen3Preview").src = producto.imagen3;
+            document.getElementById("modalDestacado").value = producto.destacado;
 
             let modal = new bootstrap.Modal(document.getElementById("productoModal"));
             modal.show();
@@ -324,11 +344,12 @@
             const imagen = document.getElementById("modalImagen").value;
             const imagen2 = document.getElementById("modalImagen2").value;
             const imagen3 = document.getElementById("modalImagen3").value;
+            const destacado = document.getElementById("modalDestacado").checked ? 1 : 0;
 
-            const productoEditado = { id, nombre, precio, descripcion, categoria, pasillo, estante, imagen, imagen2, imagen3 };
+            const productoEditado = { id, nombre, precio, descripcion, categoria, pasillo, estante, imagen, imagen2, imagen3, destacado };
 
             try {
-                let url= server + `/edit/modelo?id_modelo=${id}&nombre_modelo=${nombre}&precio=${precio}&descripcion=${descripcion}&categoria=${categoria}&pasillo=${pasillo}&estante=${estante}&url_imagen=${imagen}&imagen2=${imagen2}&imagen3=${imagen3}`;
+                let url= server + `/edit/modelo?id_modelo=${id}&nombre_modelo=${nombre}&precio=${precio}&descripcion=${descripcion}&categoria=${categoria}&pasillo=${pasillo}&estante=${estante}&url_imagen=${imagen}&imagen2=${imagen2}&imagen3=${imagen3}&destacado=${destacado}`;
                 console.log(url);
                 fetch(url, { method: "GET" })
                     .then(response => {
@@ -369,6 +390,7 @@
             const url_imagen = document.getElementById("imagen").value;
             const imagen2 = document.getElementById("imagen2").value;
             const imagen3 = document.getElementById("imagen3").value;
+            const destacado = document.getElementById("destacado").checked ? 1 : 0;
 
             // Construcción de la URL con parámetros
             let url = server + `/add/modelo?id_modelo=${id_modelo}&nombre_modelo=${nombre_modelo}&precio=${precio}`;
@@ -393,6 +415,7 @@
             if(imagen3){
                 url += `&imagen3=${imagen3}`;
             }
+            url += `&destacado=${destacado}`;
 
             try {
                 const response = await fetch(url, {method: "GET"});

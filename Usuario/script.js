@@ -251,7 +251,7 @@ function renderProducts() {
 
 function renderFeaturedProducts() {
     const grid = document.getElementById('featured-products-grid');
-    const featuredProducts = products.slice(0, 3);
+    const featuredProducts = products.slice(0, 3); //toDo: Cambiar a productos destacados reales
     grid.innerHTML = featuredProducts.map(product => createProductCard(product)).join('');
 }
 
