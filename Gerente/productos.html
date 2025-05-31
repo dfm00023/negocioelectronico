@@ -57,7 +57,6 @@
                     <th>Destacado</th>
                     <th>Nombre</th>
                     <th>Precio</th>
-                    <th>Descripción</th>
                     <th>Categoría</th>
                     <th>Pasillo</th>
                     <th>Estante</th>
@@ -95,7 +94,7 @@
 
                     <div class="mb-3">
                         <label for="modalDescripcion" class="form-label">Descripción</label>
-                        <input type="text" id="modalDescripcion" class="form-control">
+                        <textarea id="modalDescripcion" class="form-control" rows="4"></textarea>
                     </div>
 
                     <div class="mb-3">
@@ -174,7 +173,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="descripcion" class="form-label">Descripción</label>
-                            <input type="text" id="descripcion" class="form-control" >
+                            <textarea id="descripcion" class="form-control" rows="4"></textarea>
                         </div>
                         <div class="mb-3">
                             <label for="categoria" class="form-label">Categoría</label>
@@ -255,7 +254,6 @@
                     <td>${producto.destacado ? '⭐ Sí' : 'No'}</td>
                     <td>${producto.nombre_modelo}</td>
                     <td>${producto.precio} €</td>
-                    <td>${producto.descripcion || ''}</td>
                     <td>${producto.categoria || ''}</td>
                     <td>${producto.pasillo}</td>
                     <td>${producto.estante}</td>
