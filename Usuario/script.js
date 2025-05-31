@@ -74,7 +74,7 @@
 //     }
 // ];
 
-const server = 'http://sine.djpyru.es/api';
+const server = 'https://sine.djpyru.es/api';
 
 // Estado de la aplicación
 let products = [];
