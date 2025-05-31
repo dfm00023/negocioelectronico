@@ -251,7 +251,7 @@ function renderProducts() {
 
 function renderFeaturedProducts() {
     const grid = document.getElementById('featured-products-grid');
-    const featuredProducts = products.slice(0, 3); //toDo: Cambiar a productos destacados reales
+    const featuredProducts = products.filter(product => product.destacado === 1);
     grid.innerHTML = featuredProducts.map(product => createProductCard(product)).join('');
 }
 
@@ -526,7 +526,6 @@ async function realizarPedido(order) {
                 console.log("Item: ", itemData);
                 if (itemData.success === false) {
                     showNotification("No hay stock suficiente de todos los productos", 'error');
-                    //toDo // Si falla al agregar un item, debemos revertir los items que ya se han agregado
                     let url = server + '/remove/pedido?id_pedido=' + order.id;
                     const removeResponse = await fetch(url, {method: "GET"});
                     const removeData = await removeResponse.json();
@@ -921,8 +920,6 @@ function showProductDetail(productId) {
         btn.style.cursor = 'not-allowed';
     }
     const imageUrls = [product.url_imagen, product.imagen2, product.imagen3].filter(Boolean); // Filtra valores nulos o vacíos
-    //toDo: Areglar imagenes de producto
-    // Update images (using the same image for all three thumbnails as placeholder)
     const mainImage = document.getElementById('main-product-image');
     const thumbnails = document.querySelectorAll('.thumbnail');
 

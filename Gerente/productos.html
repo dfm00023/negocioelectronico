@@ -327,7 +327,11 @@
             document.getElementById("modalImagen2Preview").src = producto.imagen2;
             document.getElementById("modalImagen3").value = producto.imagen3;
             document.getElementById("modalImagen3Preview").src = producto.imagen3;
-            document.getElementById("modalDestacado").value = producto.destacado;
+            if (producto.destacado) {
+                document.getElementById("modalDestacado").checked = true;
+            } else {
+                document.getElementById("modalDestacado").checked = false;
+            }
 
             let modal = new bootstrap.Modal(document.getElementById("productoModal"));
             modal.show();
@@ -365,7 +369,7 @@
                 // Cerrar modal y actualizar tabla
                 let modal = bootstrap.Modal.getInstance(document.getElementById("productoModal"));
                 modal.hide();
-                fetchProducts();
+                location.reload();
             } catch (error) {
                 console.error("Error al actualizar producto:", error);
             }
