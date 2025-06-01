@@ -593,6 +593,12 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    cursor: zoom-in;
+    transition: transform 0.3s;
+}
+
+.main-image img:hover {
+    transform: scale(1.02);
 }
 
 .image-thumbnails {
@@ -784,6 +790,102 @@ body {
         padding: 1rem;
         margin: 0 -1rem;
         border-top: 1px solid #eee;
+    }
+}
+
+/* Image Modal */
+.image-modal-content {
+    background-color: rgba(255, 255, 255, 0.95);
+    margin: 2% auto;
+    padding: 0;
+    border-radius: 0;
+    width: 95%;
+    max-width: 1200px;
+    height: 90vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-modal-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.image-modal-container img {
+    max-width: 100%;
+    max-height: 80%;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+}
+
+.image-modal-info {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.image-modal-info h3 {
+    color: white;
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.image-modal-content .close {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 3rem;
+    color: white;
+    cursor: pointer;
+    z-index: 1001;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.image-modal-content .close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+/* Responsive for Image Modal */
+@media (max-width: 768px) {
+    .image-modal-content {
+        width: 98%;
+        height: 95vh;
+        margin: 1% auto;
+    }
+
+    .image-modal-container {
+        padding: 1rem;
+    }
+
+    .image-modal-container img {
+        max-height: 85%;
+    }
+
+    .image-modal-content .close {
+        top: 0.5rem;
+        right: 1rem;
+        font-size: 2.5rem;
+        width: 40px;
+        height: 40px;
+    }
+
+    .image-modal-info h3 {
+        font-size: 1.2rem;
     }
 }
 

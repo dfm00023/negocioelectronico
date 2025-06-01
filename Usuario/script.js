@@ -715,6 +715,11 @@ function showModal(modalId) {
 
 function closeModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
+
+    // Restore body scroll when modal is closed
+    if (modalId === "image-modal") {
+        document.body.style.overflow = "auto"
+    }
 }
 
 function showLogin() {
@@ -1011,3 +1016,37 @@ function addToCartFromDetail() {
     detailQuantity = 1;
     document.getElementById('detail-quantity').textContent = detailQuantity;
 }
+
+// Image Modal Functions
+function openImageModal(imageElement) {
+    const modal = document.getElementById("image-modal")
+    const modalImage = document.getElementById("modal-image")
+    const modalTitle = document.getElementById("modal-image-title")
+
+    modalImage.src = imageElement.src
+    modalImage.alt = imageElement.alt
+    modalTitle.textContent = imageElement.alt || "Imagen del producto"
+
+    modal.style.display = "block"
+
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = "hidden"
+}
+
+// Close modal when clicking outside the image
+window.addEventListener("click", (event) => {
+    const modal = document.getElementById("image-modal")
+    if (event.target === modal) {
+        closeModal("image-modal")
+    }
+})
+
+// Close modal with Escape key
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+        const modal = document.getElementById("image-modal")
+        if (modal.style.display === "block") {
+            closeModal("image-modal")
+        }
+    }
+})

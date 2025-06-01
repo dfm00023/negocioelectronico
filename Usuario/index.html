@@ -186,7 +186,7 @@
                 <div class="product-detail-content">
                     <div class="product-images">
                         <div class="main-image">
-                            <img id="main-product-image" src="/placeholder.svg?height=400&width=400" alt="">
+                            <img id="main-product-image" src="/placeholder.svg?height=400&width=400" alt=""onclick=" openImageModal(this)">
                         </div>
                         <div class="image-thumbnails">
                             <img class="thumbnail active" onclick="changeMainImage(this)" src="/placeholder.svg?height=80&width=80" alt="">
@@ -286,6 +286,19 @@
                 <button onclick="closeModal('success-modal'); showSection('orders')" class="btn btn-primary">
                     Ver Mis Pedidos
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="image-modal" class="modal">
+        <div class="modal-content image-modal-content">
+            <span class="close" onclick="closeModal('image-modal')">&times;</span>
+            <div class="image-modal-container">
+                <img id="modal-image" src="/placeholder.svg" alt="">
+                <div class="image-modal-info">
+                    <h3 id="modal-image-title"></h3>
+                </div>
             </div>
         </div>
     </div>
